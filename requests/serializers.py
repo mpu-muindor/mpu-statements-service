@@ -2,6 +2,14 @@ from rest_framework import serializers
 from requests.models import *
 
 
+def get_addresses():
+    addresses = list(Address.objects.all())
+    choices = tuple(
+        (a.id, a.name) for a in addresses
+    )
+    return choices
+
+
 class EdRequestSerializer(serializers.Serializer):
     """
     Справка о прослушанных дисциплинах за период обучения (справка об обучении)
@@ -47,14 +55,6 @@ class EdRequestSerializer(serializers.Serializer):
             request_text=text,
             address=Address.objects.get(pk=1),
         )
-
-
-def get_addresses():
-    addresses = list(Address.objects.all())
-    choices = tuple(
-        (a.id, a.name) for a in addresses
-    )
-    return choices
 
 
 class StatusRequestSerializer(serializers.Serializer):
