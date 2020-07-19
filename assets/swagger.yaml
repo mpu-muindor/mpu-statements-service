@@ -1,0 +1,944 @@
+swagger: "2.0"
+info:
+  description: >
+    ## Сервис по оформлению справок, заявлений и запросов Московского Политеха.
+
+    # Пока без работы с пользователем
+  version: "1.0.0"
+  title: "MPU Statements Service"
+  contact:
+    url: "vk.com/kuzmamother"
+  license:
+    name: "MIT"
+host: "127.0.0.1:8000/"
+basePath: "statements"
+tags:
+- name: "requests"
+  description: "История справок пользователя"
+- name: "admin"
+  description: "Админка сервиса. Логин/пароль — admin/admin"
+- name: "student"
+  description: "Справки, доступные студенту"
+- name: "teacher"
+  description: "Справки, доступные преподавателю. Пока тут пусто"
+paths:
+  /requests/:
+    get:
+      tags:
+        - "requests"
+      summary: "История запросов"
+      description: "История запросов справок пользователя для главной страницы (пока без пользователя)"
+      produces:
+        - "application/json"
+      parameters: []
+      responses:
+        "200":
+          description: "История всех запросов пользователя"
+          schema:
+            type: "array"
+            items:
+              $ref: "#/definitions/Request"
+  /addresses/:
+    get:
+      tags:
+        - "requests"
+      summary: "Список адресов и структурных подразделений"
+      description: "Список адресов и структурных подразделений"
+      produces:
+        - "application/json"
+      parameters: []
+      responses:
+        "200":
+          description: "Список всех адресов с названиями и id"
+          schema:
+            type: "array"
+            items:
+              $ref: "#/definitions/Address"
+  /request_types/:
+    get:
+      tags:
+        - "requests"
+      summary: "Список типов справок"
+      description: "Список типов справок"
+      produces:
+        - "application/json"
+      parameters: []
+      responses:
+        "200":
+          description: "Список всех типов с названиями и id"
+          schema:
+            type: "array"
+            items:
+              $ref: "#/definitions/RequestType"
+  /student/education/:
+    post:
+      tags:
+      - "student"
+      summary: "Справка об обучении"
+      description: >
+        Справка о прослушанных дисциплинах за период обучения (справка об обучении).
+
+        **Нужна валидация на радио кнопки (если выбран radio2, необходимо заполнить два поля для radio2) и на даты.**
+      consumes:
+      - "application/x-www-form-urlencoded"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "phone"
+        in: "formData"
+        description: "Номер телефона"
+        required: true
+        type: "string"
+      - name: "email"
+        in: "formData"
+        description: "Адрес электронной почты"
+        required: true
+        type: string
+        format: email
+      - name: "radio1"
+        in: "formData"
+        description: "Индикатор в форме «**Прошу выдать мне справку об обучении в связи с:** *моим письменным заявлением*»"
+        type: "boolean"
+        required: true
+        nullable: true
+      - name: "radio2"
+        in: "formData"
+        description: "Индикатор в форме «**Прошу выдать мне справку об обучении в связи с:** *отчислением из ...*»"
+        type: "boolean"
+      - name: "university_out"
+        in: "formData"
+        description: "название вуза на момент отчисления (нужно для radio2)"
+        type: "string"
+      - name: "year_out"
+        in: "formData"
+        description: "год на момент отчисления (нужно для radio2)"
+        type: "string"
+        format: "date"
+        example: "01.12.2020"
+      - name: "previous_doc_year"
+        in: "formData"
+        description: "Год выдачи предыдущего документа об образовании"
+        required: true
+        type: "string"
+        format: "date"
+        example: "01.12.2020"
+      - name: "previous_doc"
+        in: "formData"
+        description: >
+          Тип документа, сданного при зачислении. Значения:
+
+          * 1 — аттестат о среднем (полном) общем образовании
+
+          * 2 — диплом о среднем профессиональном образовании
+
+          * 3 — диплом о начальном профессиональном образовании
+
+          * 4 — академическая справка или диплом о неполном высшем образовании
+
+          * 5 — диплом о полном высшем образовании
+        required: true
+        type: "array"
+        items:
+          type: "integer"
+          enum:
+            [1, 2, 3, 4, 5]
+      - name: "university_in"
+        in: "formData"
+        description: "Название вуза на момент зачисления"
+        required: true
+        type: "string"
+      - name: "year_in"
+        in: "formData"
+        description: "Год зачисления"
+        required: true
+        type: "string"
+        example: "2017"
+      - name: "user_comment"
+        in: "formData"
+        description: "Комментарий пользователя"
+        type: "string"
+        nullable: true
+      responses:
+        "201":
+          description: "Текст справки создан"
+        "400":
+          description: "Bad Request"
+  /student/status/:
+    post:
+      tags:
+      - "student"
+      summary: "Справка по месту требования"
+      description: "Справка о прохождении обучения в университете (о статусе обучающегося) по месту требования"
+      consumes:
+      - "application/x-www-form-urlencoded"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "phone"
+        in: "formData"
+        description: "Номер телефона"
+        required: true
+        type: "string"
+      - name: "email"
+        in: "formData"
+        description: "Адрес электронной почты"
+        required: true
+        type: string
+        format: email
+      - name: "address"
+        required: true
+        in: "formData"
+        type: "integer"
+        description: "ID адреса получения документа"
+      - name: "to_whom"
+        required: true
+        in: "formData"
+        description: "Дана для предоставления: куда, кому и т.д."
+        type: "string"
+      - name: "user_comment"
+        in: "formData"
+        description: "Комментарий пользователя"
+        type: "string"
+        nullable: true
+      responses:
+        "201":
+          description: "Текст справки создан"
+        "400":
+          description: "Bad Request"
+  /student/sobes/:
+    post:
+      tags:
+      - "student"
+      summary: "Справка в социальные учреждения"
+      description: "Справка в социальные учреждения (Пенсионный фонд, УСЗН и пр.). **Прикрутить проверку даты**"
+      consumes:
+      - "application/x-www-form-urlencoded"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "phone"
+        in: "formData"
+        description: "Номер телефона"
+        required: true
+        type: "string"
+      - name: "email"
+        in: "formData"
+        description: "Адрес электронной почты"
+        required: true
+        type: string
+        format: email
+      - name: "address"
+        required: true
+        in: "formData"
+        description: "ID адреса получения документа"
+      - name: "order_num"
+        required: true
+        in: "formData"
+        description: "Номер приказа"
+        type: "string"
+      - name: "order_date"
+        required: true
+        in: "formData"
+        description: "Зачислена(а) по приказу от"
+        type: "string"
+      - name: "to_whom"
+        required: true
+        in: "formData"
+        description: "Дана для предоставления: куда, кому и т.д."
+        type: "string"
+      - name: "user_comment"
+        in: "formData"
+        description: "Комментарий пользователя"
+        type: "string"
+        nullable: true
+      responses:
+        "201":
+          description: "Текст справки создан"
+        "400":
+          description: "Bad Request"
+  /student/call/:
+    post:
+      tags:
+        - "student"
+      summary: "Справка-вызов"
+      description: >
+        Справка-вызов. **Нужна валидация на даты (дата 'по' не раньше даты 'с')**
+      consumes:
+        - "application/x-www-form-urlencoded"
+      produces:
+        - "application/json"
+      parameters:
+        - name: "phone"
+          in: "formData"
+          description: "Номер телефона"
+          required: true
+          type: "string"
+        - name: "email"
+          in: "formData"
+          description: "Адрес электронной почты"
+          required: true
+          type: string
+          format: email
+        - name: "date_from"
+          required: true
+          in: "formData"
+          description: "Период времени: с"
+          type: "string"
+          format: "date"
+          example: "01.01.2020"
+        - name: "date_to"
+          required: true
+          in: "formData"
+          description: "Период времени: по"
+          type: "string"
+          format: "date"
+          example: "01.12.2020"
+        - name: "user_comment"
+          in: "formData"
+          description: "Комментарий пользователя"
+          type: "string"
+          nullable: true
+      responses:
+        "201":
+          description: "Текст справки создан"
+        "400":
+          description: "Bad Request"
+  /student/pers_data/:
+    post:
+      tags:
+        - "student"
+      summary: "Запрос на изменение персональных данных"
+      description: "Запрос на изменение персональных данных"
+      consumes:
+        - multipart/form-data
+      produces:
+        - "application/json"
+      parameters:
+        - name: "phone"
+          in: "formData"
+          description: "Номер телефона"
+          required: true
+          type: "string"
+        - name: "email"
+          in: "formData"
+          description: "Адрес электронной почты"
+          required: true
+          type: string
+          format: email
+        - name: "first_last_name"
+          required: true
+          in: "formData"
+          description: "Имя и фамилия в именительном падеже"
+          type: "string"
+        - name: "reason"
+          required: true
+          in: "formData"
+          description: "Причина изменения персональных данных"
+          type: "string"
+        - name: "docs"
+          in: "formData"
+          description: "Документы, подтверждающие изменение персональных данных. По идее только jpg и pdf."
+          required: true
+          type: "file"
+      responses:
+        "201":
+          description: "Текст справки создан"
+        "400":
+          description: "Bad Request"
+  /student/pass_restore/:
+    post:
+      tags:
+        - "student"
+      summary: "Заявление на восстановление магнитного пропуска"
+      description: "Заявление на восстановление магнитного пропуска"
+      consumes:
+        - application/x-www-form-urlencoded
+      produces:
+        - "application/json"
+      parameters:
+        - name: "phone"
+          in: "formData"
+          description: "Номер телефона"
+          required: true
+          type: "string"
+        - name: "email"
+          in: "formData"
+          description: "Адрес электронной почты"
+          required: true
+          type: string
+          format: email
+        - name: "reason"
+          required: true
+          in: "formData"
+          description: "Причина восстановления пропуска"
+          type: "string"
+      responses:
+        "201":
+          description: "Текст справки создан"
+        "400":
+          description: "Bad Request"
+  /student/pract_select/:
+    post:
+      tags:
+        - "student"
+      summary: "Выбор места практики"
+      description: "Не знаю, что там"
+  /student/pract_letter/:
+    post:
+      tags:
+        - "student"
+      summary: "Заказ сопроводительного письма на прохождение практики"
+      description: "Заказ сопроводительного письма на прохождение практики. **Не забыть про проверку дат**"
+      consumes:
+        - application/x-www-form-urlencoded
+      produces:
+        - "application/json"
+      parameters:
+        - name: "phone"
+          in: "formData"
+          description: "Номер телефона"
+          required: true
+          type: "string"
+        - name: "email"
+          in: "formData"
+          description: "Адрес электронной почты"
+          required: true
+          type: string
+          format: email
+        - name: "practice_type"
+          in: "formData"
+          description: >
+            Вид практики.
+
+            + 1, учебная
+
+            + 2, производственная
+
+            + 3, преддипломная
+
+            + 4, другое
+          required: true
+          items:
+            type: "integer"
+            enum:
+              [1, 2, 3, 4]
+        - name: "another_practice"
+          in: "formData"
+          description: "Если выбран пункт 4 (другое) в practice_type."
+          type: "string"
+          nullable: true
+        - name: "date_from"
+          required: true
+          in: "formData"
+          description: "Срок прохождения практики: с"
+          type: "string"
+          format: "date"
+          example: "01.01.2020"
+        - name: "date_to"
+          required: true
+          in: "formData"
+          description: "Срок прохождения практики: по"
+          type: "string"
+          format: "date"
+          example: "01.12.2020"
+        - name: "organization_name"
+          in: "formData"
+          description: "Наименование организации для прохождения практики"
+          required: true
+          type: "string"
+        - name: "organization_head"
+          in: "formData"
+          description: "Должность руководителя организации для прохождения практики"
+          required: true
+          type: "string"
+      responses:
+        "201":
+          description: "Текст справки создан"
+        "400":
+          description: "Bad Request"
+  /student/extra_agreement/:
+    post:
+      tags:
+        - "student"
+      summary: "Заключение дополнительного соглашения к договору об обучении"
+      description: "Не знаю, что там"
+  /student/send_payment_edu/:
+    post:
+      tags:
+        - "student"
+      summary: "Отправка квитанции об оплате за обучение, неустойку (пени)"
+      description: "Не знаю, что там"
+  /student/pr_donate/:
+    post:
+      tags:
+        - "student"
+      summary: "Оформление дотации Мэрии г. Москвы"
+      description: "Оформление дотации Мэрии г. Москвы"
+      consumes:
+        - application/x-www-form-urlencoded
+      produces:
+        - "application/json"
+      parameters:
+        - name: "phone"
+          in: "formData"
+          description: "Номер телефона"
+          required: true
+          type: "string"
+        - name: "email"
+          in: "formData"
+          description: "Адрес электронной почты"
+          required: true
+          type: string
+          format: email
+        - name: "year"
+          required: true
+          in: "formData"
+          description: "Год назначения выплат"
+          type: "string"
+          maxLength: 4
+        - name: "reason"
+          in: "formData"
+          description: >
+            Основание для получения дотации:
+
+            + 1 — сироты или оставшиеся без попечения родителей
+
+            + 2 — инвалиды
+
+            + 3 — члены многодетной семьи
+
+            + 4 — имеющие на иждивении ребёнка
+
+            + 5 — участники военных действий
+
+            + 6 — пострадавшие в результате аварии на Чернобыльской АЭС и других радиационных катастроф
+
+            + 7 — родители — инвалиды, пенсионеры
+
+            + 8 — члены неполной семьи
+
+            + 9 — хроническое заболевание
+          required: true
+          type: "array"
+          items:
+            type: "integer"
+            enum:
+              [1, 2, 3, 4, 5, 6, 7, 8, 9]
+        - name: "prof_ticket"
+          required: true
+          in: "formData"
+          description: "Номер членского профсоюзного билета"
+          type: "string"
+          maxLength: 100
+        - name: "user_address"
+          required: true
+          in: "formData"
+          description: "Адрес по месту регистрации"
+          type: "string"
+          maxLength: 300
+        - name: "docs"
+          in: "formData"
+          description: "Документы, подтверждающие право на получение дотации. По идее только jpg и pdf."
+          required: true
+          type: "file"
+      responses:
+        "201":
+          description: "Текст справки создан"
+        "400":
+          description: "Bad Request"
+  /student/pr_mathelp/:
+    post:
+      tags:
+        - "student"
+      summary: "Заявка на оказание материальной помощи"
+      description: "Заявка на оказание материальной помощи."
+      consumes:
+        - multipart/form-data
+      produces:
+        - "application/json"
+      parameters:
+        - name: "phone"
+          in: "formData"
+          description: "Номер телефона"
+          required: true
+          type: "string"
+        - name: "email"
+          in: "formData"
+          description: "Адрес электронной почты"
+          required: true
+          type: string
+          format: email
+        - name: "department"
+          required: true
+          in: "formData"
+          description: "Факультет (институт)/структурное подразделение"
+          type: "string"
+        - name: "reason"
+          in: "formData"
+          description: >
+            Основания для получения материальной помощи. Можно выбрать несколько:
+
+            + 1, Нуждающиеся в дорогостоящем лечении и (или) восстановлении здоровья, в том числе в компенсации расходов на операцию, приобретение дорогостоящих медикаментов при наличии соответствующих медицинских рекомендаций, проведении необходимых платных медицинских осмотров и обследований, профилактических прививок
+
+            + 2, Дети-сироты и дети, оставшиеся без попечения родителей
+
+            + 3, Лица из числа детей-сирот и детей, оставшихся без попечения родителей
+
+            + 4, Потерявшие в период обучения обоих или единственного родителя
+
+            + 5, Признанные в установленном порядке инвалидами I, II группы, инвалидами с детства (вне зависимости от установленной группы инвалидности)
+
+            + 6, Дети-инвалиды
+
+            + 7, Инвалиды и ветераны боевых действий
+
+            + 8, Пострадавшие в результате аварии на Чернобыльской АЭС и других радиационных катастроф
+
+            + 9, Обучающиеся, признанные в установленном порядке инвалидами III группы (за исключением инвалидов III группы – инвалидов с детства)
+
+            + 10, Обучающиеся из малоимущих семей или одиноко проживающие обучающиеся, среднедушевой доход которых ниже величины прожиточного минимума, установленного в соответствующем субъекте РФ и (или) получившие государственную социальную помощь
+
+            + 11, Обучающиеся, имеющие обоих родителей (единственного родителя), являющихся инвалидом и (или) пенсионером
+
+            + 12, Обучающиеся, потерявшие во время обучения в университете одного из родителей (потеря кормильца)
+
+            + 13, Обучающиеся из неполных семей
+
+            + 14, Обучающиеся из многодетных семей
+
+            + 15, В связи с бракосочетанием
+
+            + 16, Обучающиеся женского пола, вставшим на учет в медицинском учреждении по беременности
+
+            + 17, В связи с рождением ребенка
+
+            + 18, Обучающиеся, являющиеся одинокой матерью (отцом)
+
+            + 19, Обучающиеся, имеющие на иждивении ребенка (детей)
+
+            + 20, Семьи обучающихся с ребенком (детьми)
+
+            + 21, В связи со смертью близкого родственника (супруг (супруга), ребенок (дети), мать, отец, брат и/или сестра (полнородные и неполнородные), бабушка, дедушка)
+
+            + 22, Обучающиеся, пострадавшие при чрезвычайных обстоятельствах (стихийных бедствиях, техногенных авариях, вооруженных конфликтах, экологических катастрофах, пожарах, несчастных случаях)
+
+            + 23, В целях компенсации расходов на проезд от места постоянного жительства к месту учебы и обратно
+
+            + 24, В целях компенсации расходов в связи с мотивированной необходимостью улучшения жилищных условий
+
+            + 25, Временно оказавшиеся в сложной жизненной ситуации, в иных ситуациях по решению Комиссии
+
+            + 26, Обучающиеся, имеющие право на получение государственной социальной стипендии в условиях предупреждения распространения новой коронавирусной инфекции COVID-19 на территории РФ
+
+            + 27, Обучающиеся, проживающие в общежитиях Московского Политеха в условиях реализации мероприятий по предотвращению распространения коронавирусной инфекции COVID-19
+          required: true
+          type: "array"
+          items:
+            type: "integer"
+            enum:
+              [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27]
+          collectionFormat: "multi"
+        - name: "docs"
+          in: "formData"
+          description: "Документы, подтверждающие право на получение материальной помощи. По идее только jpg и pdf."
+          required: true
+          type: "file"
+      responses:
+        "201":
+          description: "Текст справки создан"
+        "400":
+          description: "Bad Request"
+  /student/pr_socstip/:
+    post:
+      tags:
+        - "student"
+      summary: "Оформление социальной стипендии"
+      description: "Оформление социальной стипендии"
+      consumes:
+        - multipart/form-data
+      produces:
+        - "application/json"
+      parameters:
+        - name: "phone"
+          in: "formData"
+          description: "Номер телефона"
+          required: true
+          type: "string"
+        - name: "email"
+          in: "formData"
+          description: "Адрес электронной почты"
+          required: true
+          type: string
+          format: email
+        - name: "reason"
+          in: "formData"
+          description: >
+            Основание для получения социальнй стипендии:
+
+            + 1, Являющиеся детьми-сиротами и детьми, оставшимися без попечения родителей, лицами из числа детей-сирот и детей, оставшихся без попечения родителей, лицами, потерявшими в период обучения обоих родителей или единственного родителя, детьми-инвалидами
+
+            + 2, Являющиеся инвалидами I и II групп, инвалидами с детства
+
+            + 3, Подвергшиеся воздействию радиации вследствие катастрофы на Чернобыльской АЭС и иных радиационных катастроф, вследствие ядерных испытаний на Семипалатинском полигоне
+
+            + 4, Являющиеся инвалидами вследствие военной травмы или заболевания, полученных в период прохождения военной службы, и ветеранами боевых действий, а также студентам из числа граждан, проходивших в течение не менее трех лет военную службу по контракту на воинских должностях, подлежащих замещению солдатами, матросами, сержантами, старшинами, и уволенных с военной службы по основаниям, предусмотренным подпунктами «б» - «г» пункта 1, подпунктом «а» пункта 2 и подпунктами «а» - «в» пункта 3 статьи 51 Федерального закона от 28 марта 1998 года N 53-ФЗ «О воинской обязанности и военной службе»
+
+            + 5, Получившие государственную социальную помощь
+
+          required: true
+          type: "array"
+          items:
+            type: "integer"
+            enum:
+              [1, 2, 3, 4, 5]
+        - name: "docs"
+          in: "formData"
+          description: "Документы, подтверждающие право на получение социальной стипендии. По идее только jpg и pdf."
+          required: true
+          type: "file"
+      responses:
+        "201":
+          description: "Текст справки создан"
+        "400":
+          description: "Bad Request"
+  /student/otsrochka/:
+    post:
+      tags:
+        - "student"
+      summary: "Заявление для получения отсрочки"
+      description: >
+        Запрос на получение в мобилизационном отделе справки (Приложение № 2) для получения отсрочки от призыва на военную службу в военном комиссариате.
+
+        **Добавить валидацию на поле wife (если статус 'женат', нужно проверять поле wife)**
+      consumes:
+        - multipart/form-data
+      produces:
+        - "application/json"
+      parameters:
+        - name: "phone"
+          in: "formData"
+          description: "Номер телефона"
+          required: true
+          type: "string"
+        - name: "email"
+          in: "formData"
+          description: "Адрес электронной почты"
+          required: true
+          type: string
+          format: email
+        - name: "faculty"
+          in: "formData"
+          description: >
+            Факультет / институт:
+
+            + 1, Факультет информационных технологий
+
+            + 2, Транспортный факультет
+
+            + 3, Факультет машиностроения
+
+            + 4, Факультет химической технологии и биотехнологии
+
+            + 5, Факультет урбанистики и городского хозяйства
+
+            + 6, Факультет базовых компетенций
+
+            + 7, Инженерная школа (факультет)
+
+            + 8, Факультет довузовской подготовки
+
+            + 9, Факультет дополнительного образования
+
+            + 10, Институт графики и искусства книги имени В. А. Фаворского
+
+            + 11, Институт коммуникаций и медиабизнеса
+
+            + 12, Институт издательского дела и журналистики
+
+            + 13, Институт принтмедиа и информационных технологий
+
+          required: true
+          type: "array"
+          items:
+            type: "integer"
+            enum:
+              [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13]
+        - name: "category"
+          in: "formData"
+          description: >
+            Категория годности:
+
+            + 1, А
+
+            + 2, Б
+
+            + 3, В
+
+            + 4, Г
+
+          required: true
+          type: "array"
+          items:
+            type: "integer"
+            enum:
+              [1, 2, 3, 4]
+        - name: "martial_status"
+          in: "formData"
+          description: >
+            Семейное положение:
+
+            + 1, холост
+
+            + 2, женат
+
+          required: true
+          type: "array"
+          items:
+            type: "integer"
+            enum:
+              [1, 2]
+        - name: "wife"
+          in: "formData"
+          description: "ФИО жены, дата рождения"
+          nullable: true
+          type: "string"
+        - name: "children"
+          in: "formData"
+          description: "ФИО детей, дата рождения"
+          nullable: true
+          type: "string"
+        - name: "user_address"
+          in: "formData"
+          description: "Адрес места жительства"
+          required: true
+          type: "string"
+        - name: "user_temp_address"
+          in: "formData"
+          description: "Адрес временной регистрации"
+          nullable: true
+          type: "string"
+      responses:
+        "201":
+          description: "Текст справки создан"
+        "400":
+          description: "Bad Request"
+  /student/free_request/:
+    post:
+      tags:
+        - "student"
+      summary: "Произвольный запрос"
+      description: "Произвольный запрос. **Добавлены не все адреса!**"
+      consumes:
+        - multipart/form-data
+      produces:
+        - "application/json"
+      parameters:
+        - name: "phone"
+          in: "formData"
+          description: "Номер телефона"
+          required: true
+          type: "string"
+        - name: "email"
+          in: "formData"
+          description: "Адрес электронной почты"
+          required: true
+          type: string
+          format: email
+        - name: "address"
+          required: true
+          in: "formData"
+          type: "integer"
+          description: "ID адреса получения документа"
+        - name: "title"
+          required: true
+          in: "formData"
+          description: "Тематика обращения"
+          type: "string"
+        - name: "text"
+          required: true
+          in: "formData"
+          description: "Суть обращения"
+          type: "string"
+        - name: "user_comment"
+          in: "formData"
+          description: "Комментарий к заявке"
+          type: "string"
+          nullable: true
+        - name: "docs"
+          in: "formData"
+          description: "Присоединить файл (при необходимости). По идее только jpg и pdf."
+          type: "file"
+          nullable: true
+      responses:
+        "201":
+          description: "Текст справки создан"
+        "400":
+          description: "Bad Request"
+definitions:
+  Request:
+    type: "object"
+    properties:
+      id:
+        type: "integer"
+      datetime:
+        type: "string"
+        format: "date-time"
+        description: "Дата и время подачи справки"
+      reg_number:
+        type: "string"
+        example: "SC02032011137"
+        description: "Регистрационный номер запроса"
+      request_title:
+        $ref: "#/definitions/RequestType"
+        description: "Название справки"
+      request_text:
+        type: "string"
+        description: "Текст справки. Генерируется на сервере по заполненной форме"
+        example: "Зачислена(а) по приказу от 19.08.2019 № 111-а. Дана для предоставления в Пенсионный фонд"
+      status:
+        type: "integer"
+        description: >
+          Статус рассмотрения заявки. Возможные значения:
+
+          + 1 — На рассмотрении
+
+          + 2 — Отклонена
+
+          + 3 — Готово
+        enum:
+          [1, 2, 3]
+      date_for_status:
+        type: "string"
+        format: "date-time"
+        description: "Дата и время изменения статуса справки"
+      address:
+        $ref: "#/definitions/Address"
+        description: "Адрес выдачи справки"
+      remark:
+        type: "string"
+        description: "Примечание от сотрудников"
+        example: "Отклонено. Для справки в ПФ необходимо указывать номер и дату приказа о зачислении"
+    xml:
+      name: "Request"
+  Address:
+    type: "object"
+    description: "Структурное подразделение, адрес"
+    required:
+      - "name"
+    properties:
+      id:
+        type: "integer"
+      name:
+        type: "string"
+        example: "Отделение «На Большой Семеновской» центра по работе со студентами Ул. Большая Семеновская, 38; ауд. В-107. Тел. (495) 223-05-23 (доб. 1375, 1215, 1105) ; crs-bs@mospolytech.ru"
+  RequestType:
+    type: "object"
+    description: "Тип справки"
+    required:
+      - "name"
+    properties:
+      id:
+        type: "integer"
+      name:
+        type: "string"
+        example: "Справка о прослушанных дисциплинах за период обучения (справка об обучении)"
