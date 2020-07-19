@@ -1,9 +1,13 @@
+from django.db import OperationalError
 from rest_framework import serializers
 from requests.models import *
 
 
 def get_addresses():
-    addresses = list(Address.objects.all())
+    try:
+        addresses = list(Address.objects.all())
+    except OperationalError:
+        addresses = list()
     choices = tuple(
         (a.id, a.name) for a in addresses
     )
