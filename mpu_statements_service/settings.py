@@ -29,22 +29,16 @@ ALLOWED_HOSTS = ['*']
 
 
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
-
 MEDIA_URL = '/media/'  # URL для медии в шаблонах
 
 
 STATIC_ROOT = os.path.join(BASE_DIR, 'static')  # пустая папка, сюда будет собирать статику collectstatic
-
 STATIC_URL = '/static/'  # URL для шаблонов
-
 STATICFILES_DIRS = (
-
     os.path.join(BASE_DIR, 'assets'),
-
 )
 
 # "Поисковики" статики. Первый ищет статику в STATICFILES_DIRS,
-
 # второй в папках приложений.
 
 STATICFILES_FINDERS = (
