@@ -198,7 +198,7 @@ class MainPageRequestViewSet(views.APIView):
     def get(self, request, format=None):
         queryset = Request.objects.all()
         serializer = MainPageRequestSerializer(queryset, many=True)
-        return Response(serializer.data)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
     def post(self, request, format=None):
         serializer = MainPageRequestSerializer(data=request.data)
@@ -206,3 +206,25 @@ class MainPageRequestViewSet(views.APIView):
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class AddressListViewSet(views.APIView):
+    """
+    Получение списка адресов
+    """
+
+    def get(self, request, format=None):
+        queryset = Address.objects.all()
+        serializer = AddressSerializer(queryset, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+class RequestTypeListViewSet(views.APIView):
+    """
+    Получение списка типов заявок
+    """
+
+    def get(self, request, format=None):
+        queryset = RequestType.objects.all()
+        serializer = RequestTypeSerializer(queryset, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)

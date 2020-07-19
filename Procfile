@@ -1,0 +1,1 @@
+web: gunicorn mpu-statements-service.wsgi --log-file -

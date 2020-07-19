@@ -8,7 +8,7 @@ class Address(models.Model):
     name = models.CharField(verbose_name="Структурное подразделение, адрес", max_length=1500)
 
     def __str__(self):
-        return self.name
+        return self.name[:50] + '...'
 
     class Meta:
         verbose_name = "адрес"
@@ -38,7 +38,7 @@ class Request(models.Model):
     status_done = 3
     STATUSES = (
         (status_approved, "На рассмотрении"),
-        (status_rejected, "Отклонена"),
+        (status_rejected, "Отклонено"),
         (status_done, "Готово"),
     )
 
@@ -51,6 +51,7 @@ class Request(models.Model):
     date_for_status = models.DateTimeField(verbose_name="Дата статуса", auto_now=True)
     address = models.ForeignKey(Address, on_delete=models.CASCADE, verbose_name="Структурное подразделение, адрес")
     remark = models.CharField(verbose_name="Примечание", max_length=1000, blank=True, null=True)
+    # TODO: add user comments and images from docs
 
     def __str__(self):
         return "{} {} {}".format(

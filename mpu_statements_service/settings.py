@@ -25,7 +25,7 @@ SECRET_KEY = 'c-u=0mxq5#z_q_-0_j3g0ufi66&d9$3coorkb7qp*g8tcg6_$v'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
@@ -123,7 +123,14 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/3.0/howto/static-files/
 
 STATIC_URL = '/static/'
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, "static"),
+    '/static/',
+]
 
 REST_FRAMEWORK = {
     "DATE_INPUT_FORMATS": ["%d.%m.%Y"],
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+            'rest_framework.authentication.BasicAuthentication',
+        )
 }

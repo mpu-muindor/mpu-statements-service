@@ -17,7 +17,6 @@ class EdRequestSerializer(serializers.Serializer):
 
     phone = serializers.CharField(max_length=18)
     email = serializers.EmailField()
-    # TODO: add validation to radios
     radio1 = serializers.NullBooleanField(required=False)
     radio2 = serializers.NullBooleanField(required=False)
     university_out = serializers.CharField(required=False, allow_null=True)
@@ -43,14 +42,15 @@ class EdRequestSerializer(serializers.Serializer):
         text = f'Прошу выдать мне справку об обучении в связи с {temp} Предыдущий документ об образовании, ' + \
                f'выданный в {self.validated_data["previous_doc_year"]}: {dict(self.DOC_TYPE).get(self.validated_data["previous_doc"])}. ' + \
                f'В {self.validated_data["university_in"]} зачислен(а) в {self.validated_data["year_in"]} году.'
-        text += f' Комментарий: {self.validated_data["user_comment"]}' if self.validated_data["user_comment"] else ''
+        if self.validated_data.get("user_comment"):
+            text += f' Комментарий: {self.validated_data["user_comment"]}'
 
         try:
             num = Request.objects.filter(request_title__id=1).last().id + 1
         except AttributeError:
             num = 1
         Request.objects.create(
-            reg_number=f"SC{num}",
+            reg_number=f"ED{num}",
             request_title=RequestType.objects.get(pk=1),
             request_text=text,
             address=Address.objects.get(pk=1),
@@ -70,7 +70,8 @@ class StatusRequestSerializer(serializers.Serializer):
 
     def save(self, **kwargs):
         text = f'Дана для предоставления {self.validated_data["to_whom"]}.'
-        text += f' Комментарий: {self.validated_data["user_comment"]}' if self.validated_data["user_comment"] else ''
+        if self.validated_data.get("user_comment"):
+            text += f' Комментарий: {self.validated_data["user_comment"]}'
         try:
             num = Request.objects.filter(request_title__id=2).last().id + 1
         except AttributeError:
@@ -99,7 +100,8 @@ class SobesRequestSerializer(serializers.Serializer):
     def save(self, **kwargs):
         text = f'Зачислена(а) по приказу от {self.validated_data["order_date"]} {self.validated_data["order_num"]}. ' + \
                f'Дана для предоставления {self.validated_data["to_whom"]}.'
-        text += f' Комментарий: {self.validated_data["user_comment"]}' if self.validated_data["user_comment"] else ''
+        if self.validated_data.get("user_comment"):
+            text += f' Комментарий: {self.validated_data["user_comment"]}'
         try:
             num = Request.objects.filter(request_title__id=3).last().id + 1
         except AttributeError:
@@ -119,7 +121,6 @@ class CallRequestSerializer(serializers.Serializer):
 
     phone = serializers.CharField(max_length=18)
     email = serializers.EmailField()
-    address = serializers.ChoiceField(choices=get_addresses())
     date_from = serializers.DateField(format="%d.%m.%Y")
     date_to = serializers.DateField(format="%d.%m.%Y")
     user_comment = serializers.CharField(required=False, allow_null=True)
@@ -130,7 +131,8 @@ class CallRequestSerializer(serializers.Serializer):
 
         day_delta = (self.validated_data["date_to"] - self.validated_data["date_from"]).days
         text = f'Период гарантий с: {date_from} по: {date_to}. Кол-во дней: {day_delta}.'
-        text += f' Комментарий: {self.validated_data["user_comment"]}' if self.validated_data["user_comment"] else ''
+        if self.validated_data.get("user_comment"):
+            text += f' Комментарий: {self.validated_data["user_comment"]}'
         try:
             num = Request.objects.filter(request_title__id=4).last().id + 1
         except AttributeError:
@@ -139,7 +141,7 @@ class CallRequestSerializer(serializers.Serializer):
             reg_number=f"SPV{num}",
             request_title=RequestType.objects.get(pk=4),
             request_text=text,
-            address=Address.objects.get(pk=self.validated_data["address"]),
+            address=Address.objects.get(pk=1),
         )
 
 
@@ -151,7 +153,7 @@ class PersDataRequestSerializer(serializers.Serializer):
     email = serializers.EmailField()
     first_last_name = serializers.CharField(max_length=500)
     reason = serializers.CharField(max_length=500)
-    pers_docs = serializers.FileField()
+    docs = serializers.FileField()
 
     def save(self, **kwargs):
         text = f'Прошу внести изменения в мои персональные данные и в дальнейшем именовать меня ' + \
@@ -183,7 +185,7 @@ class PassRestoreRequestSerializer(serializers.Serializer):
         except AttributeError:
             num = 1
         Request.objects.create(
-            reg_number=f"PR{num}",
+            reg_number=f"RP{num}",
             request_title=RequestType.objects.get(pk=6),
             request_text=text,
             address=Address.objects.get(pk=1),
@@ -231,7 +233,7 @@ class PracticeLetterRequestSerializer(serializers.Serializer):
             reg_number=f"PRL{num}",
             request_title=RequestType.objects.get(pk=8),
             request_text=text,
-            address=Address.objects.get(pk=1),
+            address=Address.objects.get(pk=1),  # Отдел практики и трудоустройства
         )
 
 
@@ -293,8 +295,8 @@ class PrDonateRequestSerializer(serializers.Serializer):
         except AttributeError:
             num = 1
         Request.objects.create(
-            reg_number=f"PR{num}",
-            request_title=RequestType.objects.get(pk=11),
+            reg_number=f"DN{num}",
+            request_title=RequestType.objects.get(pk=11),  # адрес профсоюза на БС
             request_text=text,
             address=Address.objects.get(pk=1),
         )
@@ -307,30 +309,60 @@ class MatHelpRequestSerializer(serializers.Serializer):
     phone = serializers.CharField(max_length=18)
     email = serializers.EmailField()
     department = serializers.CharField(max_length=700)
-    # TODO: add all reasons
     # TODO: add text formatting to reasons
     REASONS = (
-        (1, "нуждаюсь в дорогостоящем лечении и (или) восстановлении здоровья, " + \
-         "в том числе в компенсации расходов на операцию, приобретение дорогостоящих " + \
-         "медикаментов при наличии соответствующих медицинских рекомендаций, " + \
-         "проведении необходимых платных медицинских осмотров и обследований, профилактических прививок"),
-        (2, "являюсь сиротой или оставшим(ей)ся без попечения родителей"),
-        (3, "являюсь потерявшим(ей) в период обучения обоих или единственного родителя"),
-        (4, "лентяйка, и так хватит"),
+        (1, "Нуждающиеся в дорогостоящем лечении и (или) восстановлении здоровья, в том числе в компенсации расходов "
+            "на операцию, приобретение дорогостоящих медикаментов при наличии соответствующих медицинских "
+            "рекомендаций, проведении необходимых платных медицинских осмотров и обследований, профилактических "
+            "прививок"),
+        (2, "Дети-сироты и дети, оставшиеся без попечения родителей"),
+        (3, "Лица из числа детей-сирот и детей, оставшихся без попечения родителей"),
+        (4, "Потерявшие в период обучения обоих или единственного родителя"),
+        (5, "Признанные в установленном порядке инвалидами I, II группы, инвалидами с детства (вне зависимости от "
+            "установленной группы инвалидности)"),
+        (6, "Дети-инвалиды"),
+        (7, "Инвалиды и ветераны боевых действий"),
+        (8, "Пострадавшие в результате аварии на Чернобыльской АЭС и других радиационных катастроф"),
+        (9, "Обучающиеся, признанные в установленном порядке инвалидами III группы (за исключением инвалидов III "
+            "группы – инвалидов с детства)"),
+        (10, "Обучающиеся из малоимущих семей или одиноко проживающие обучающиеся, среднедушевой доход которых ниже "
+            "величины прожиточного минимума, установленного в соответствующем субъекте РФ и (или) получившие "
+            "государственную социальную помощь"),
+        (11, "Обучающиеся, имеющие обоих родителей (единственного родителя), являющихся инвалидом и (или) пенсионером"),
+        (12, "Обучающиеся, потерявшие во время обучения в университете одного из родителей (потеря кормильца)"),
+        (13, "Обучающиеся из неполных семей"),
+        (14, "Обучающиеся из многодетных семей"),
+        (15, "В связи с бракосочетанием"),
+        (16, "Обучающиеся женского пола, вставшим на учет в медицинском учреждении по беременности"),
+        (17, "В связи с рождением ребенка"),
+        (18, "Обучающиеся, являющиеся одинокой матерью (отцом)"),
+        (19, "Обучающиеся, имеющие на иждивении ребенка (детей)"),
+        (20, "Семьи обучающихся с ребенком (детьми)"),
+        (21, "В связи со смертью близкого родственника (супруг (супруга), ребенок (дети), мать, отец, брат и/или "
+            "сестра (полнородные и неполнородные), бабушка, дедушка)"),
+        (22, "Обучающиеся, пострадавшие при чрезвычайных обстоятельствах (стихийных бедствиях, техногенных авариях, "
+            "вооруженных конфликтах, экологических катастрофах, пожарах, несчастных случаях)"),
+        (23, "В целях компенсации расходов на проезд от места постоянного жительства к месту учебы и обратно"),
+        (24, "В целях компенсации расходов в связи с мотивированной необходимостью улучшения жилищных условий"),
+        (25, "Временно оказавшиеся в сложной жизненной ситуации, в иных ситуациях по решению Комиссии"),
+        (26, "Обучающиеся, имеющие право на получение государственной социальной стипендии в условиях предупреждения "
+            "распространения новой коронавирусной инфекции COVID-19 на территории РФ"),
+        (27, "Обучающиеся, проживающие в общежитиях Московского Политеха в условиях реализации мероприятий по "
+            "предотвращению распространения коронавирусной инфекции COVID-19"),
     )
-    reason = serializers.ChoiceField(choices=REASONS)
+    reason = serializers.MultipleChoiceField(choices=REASONS)
     docs = serializers.FileField()
 
     def save(self, **kwargs):
         text = f'Факультет (институт)/структурное подразделение: {self.validated_data["department"]}. ' + \
                f'Прошу оказать мне материальную помощь из средств стипендиального фонда университета ' + \
-               f'в связи с тем, что я {dict(self.REASONS).get(self.validated_data["reason"])}.'
+               f'в связи с тем, что я {dict(self.REASONS).get(list(self.validated_data["reason"])[0])}.'
         try:
             num = Request.objects.filter(request_title__id=12).last().id + 1
         except AttributeError:
             num = 1
         Request.objects.create(
-            reg_number=f"PR{num}",
+            reg_number=f"MR{num}",
             request_title=RequestType.objects.get(pk=12),
             request_text=text,
             address=Address.objects.get(pk=1),
@@ -368,7 +400,7 @@ class SocStipRequestSerializer(serializers.Serializer):
         except AttributeError:
             num = 1
         Request.objects.create(
-            reg_number=f"PR{num}",
+            reg_number=f"PS{num}",
             request_title=RequestType.objects.get(pk=13),
             request_text=text,
             address=Address.objects.get(pk=1),
@@ -410,21 +442,24 @@ class ArmyRequestSerializer(serializers.Serializer):
         (2, "женат"),
     )
     martial_status = serializers.ChoiceField(choices=MARTIAL_STATUSES)
+    wife = serializers.CharField(required=False, allow_null=True)
     children = serializers.CharField(required=False, allow_null=True)
     user_address = serializers.CharField()
     user_temp_address = serializers.CharField(required=False, allow_null=True)
-    docs = serializers.FileField()
 
     def save(self, **kwargs):
         # TODO: add user!!! (2)
-        text = f'ФИО,Факультет: {dict(self.FACULTIES).get(self.validated_data["faculty"])},Специальность:,ДР:,Тел:,' \
-               f'Категория годности:{dict(self.CATEGORIES).get(self.validated_data["category"])},' \
-               f'Место жительства: {self.validated_data["user_address"] },' \
-               f'Семейное положение: {dict(self.MARTIAL_STATUSES).get(self.validated_data["martial_status"])}'
-        text += f' ФИО детей, дата рождения: {self.validated_data["children"]}' \
-            if self.validated_data["children"] else ''
-        text += f' Адрес временной регистрации: {self.validated_data["user_temp_address"]}' \
-            if self.validated_data["user_temp_address"] else ''
+        text = f'ФИО\nФакультет: {dict(self.FACULTIES).get(self.validated_data["faculty"])}\nСпециальность:\nДР:\nТел:\n' \
+               f'Категория годности:{dict(self.CATEGORIES).get(self.validated_data["category"])}\n' \
+               f'Место жительства: {self.validated_data["user_address"] }\n' \
+               f'Семейное положение: {dict(self.MARTIAL_STATUSES).get(self.validated_data["martial_status"])}\n'
+
+        if self.validated_data.get("children"):
+            text += f'ФИО детей, дата рождения: {self.validated_data["children"]}\n'
+        if self.validated_data.get("wife"):
+            text += f'Жена: {self.validated_data["wife"]}\n'
+        if self.validated_data.get("user_temp_address"):
+            text += f'Временная регистрация: {self.validated_data["user_temp_address"]}\n'
         try:
             num = Request.objects.filter(request_title__id=14).last().id + 1
         except AttributeError:
@@ -443,23 +478,25 @@ class FreeRequestSerializer(serializers.Serializer):
     """
     phone = serializers.CharField(max_length=18)
     email = serializers.EmailField()
+    address = serializers.ChoiceField(choices=get_addresses())
     title = serializers.CharField(max_length=500)
     text = serializers.CharField(max_length=500)
     user_comment = serializers.CharField(required=False, allow_null=True)
-    docs = serializers.FileField()
+    docs = serializers.FileField(required=False, allow_null=True)
 
     def save(self, **kwargs):
         text = self.validated_data["text"]
-        text += f' Комментарий: {self.validated_data["user_comment"]}' if self.validated_data["user_comment"] else ''
+        if self.validated_data.get("user_comment"):
+            text += f' Комментарий: {self.validated_data["user_comment"]}'
         try:
             num = Request.objects.filter(request_title__id=15).last().id + 1
         except AttributeError:
             num = 1
         Request.objects.create(
-            reg_number=f"PR{num}",
+            reg_number=f"FF{num}",
             request_title=RequestType.objects.get(pk=15),
             request_text=text,
-            address=Address.objects.get(pk=1),
+            address=Address.objects.get(pk=self.validated_data["address"]),
         )
 
 
@@ -482,3 +519,15 @@ class MainPageRequestSerializer(serializers.ModelSerializer):
         model = Request
         fields = ("datetime", "reg_number", "request_title", "request_text",
                   "status", "date_for_status", "address", "remark")
+
+
+class AddressSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Address
+        fields = ("id", "name", )
+
+
+class RequestTypeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = RequestType
+        fields = ("id", "name", )
