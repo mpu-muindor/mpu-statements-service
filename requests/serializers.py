@@ -2,12 +2,12 @@ from rest_framework import serializers
 from requests.models import *
 
 
-# def get_addresses():
-#     addresses = list(Address.objects.all())
-#     choices = tuple(
-#         (a.id, a.name) for a in addresses
-#     )
-#     return choices
+def get_addresses():
+    addresses = list(Address.objects.all())
+    choices = tuple(
+        (a.id, a.name) for a in addresses
+    )
+    return choices
 
 
 class EdRequestSerializer(serializers.Serializer):
@@ -64,7 +64,7 @@ class StatusRequestSerializer(serializers.Serializer):
 
     phone = serializers.CharField(max_length=18)
     email = serializers.EmailField()
-    # address = serializers.ChoiceField(choices=get_addresses())
+    address = serializers.ChoiceField(choices=get_addresses())
     to_whom = serializers.CharField(max_length=500)
     user_comment = serializers.CharField(required=False, allow_null=True)
 
@@ -91,7 +91,7 @@ class SobesRequestSerializer(serializers.Serializer):
 
     phone = serializers.CharField(max_length=18)
     email = serializers.EmailField()
-    # address = serializers.ChoiceField(choices=get_addresses())
+    address = serializers.ChoiceField(choices=get_addresses())
     order_num = serializers.CharField()
     order_date = serializers.CharField()
     to_whom = serializers.CharField(max_length=500)
@@ -478,7 +478,7 @@ class FreeRequestSerializer(serializers.Serializer):
     """
     phone = serializers.CharField(max_length=18)
     email = serializers.EmailField()
-    # address = serializers.ChoiceField(choices=get_addresses())
+    address = serializers.ChoiceField(choices=get_addresses())
     title = serializers.CharField(max_length=500)
     text = serializers.CharField(max_length=500)
     user_comment = serializers.CharField(required=False, allow_null=True)

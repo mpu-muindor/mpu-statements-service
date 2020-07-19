@@ -150,9 +150,9 @@ USE_TZ = True
 
 REST_FRAMEWORK = {
     "DATE_INPUT_FORMATS": ["%d.%m.%Y"],
-    'DEFAULT_AUTHENTICATION_CLASSES': (
-            'rest_framework.authentication.BasicAuthentication',
-        )
+    # 'DEFAULT_AUTHENTICATION_CLASSES': (
+    #         'rest_framework.authentication.BasicAuthentication',
+    #     )
 }
 
 # Simplified static file serving.

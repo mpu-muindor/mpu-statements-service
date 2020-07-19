@@ -6,11 +6,9 @@ info:
     # Пока без работы с пользователем
   version: "1.0.0"
   title: "MPU Statements Service"
-  contact:
-    url: "vk.com/kuzmamother"
   license:
     name: "MIT"
-host: "127.0.0.1:8000/"
+host: "mpu-statements-service.herokuapp.com/"
 basePath: "statements"
 tags:
 - name: "requests"
