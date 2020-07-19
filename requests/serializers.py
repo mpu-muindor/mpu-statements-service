@@ -6,7 +6,7 @@ from requests.models import *
 def get_addresses():
     try:
         addresses = list(Address.objects.all())
-    except OperationalError:
+    except:
         addresses = list()
     choices = tuple(
         (a.id, a.name) for a in addresses
