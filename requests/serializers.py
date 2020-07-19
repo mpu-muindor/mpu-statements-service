@@ -43,7 +43,8 @@ class EdRequestSerializer(serializers.Serializer):
             if self.validated_data["radio1"] else f'отчислением из {self.validated_data["university_out"]} в ' \
                                                   f'{self.validated_data["year_out"]} году.'
         text = f'Прошу выдать мне справку об обучении в связи с {temp} Предыдущий документ об образовании, ' + \
-               f'выданный в {self.validated_data["previous_doc_year"]}: {dict(self.DOC_TYPE).get(self.validated_data["previous_doc"])}. ' + \
+               f'выданный в {self.validated_data["previous_doc_year"]} году: ' \
+               f'{dict(self.DOC_TYPE).get(self.validated_data["previous_doc"])}. ' + \
                f'В {self.validated_data["university_in"]} зачислен(а) в {self.validated_data["year_in"]} году.'
         if self.validated_data.get("user_comment"):
             text += f' Комментарий: {self.validated_data["user_comment"]}'
