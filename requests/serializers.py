@@ -1,4 +1,3 @@
-from django.db import OperationalError
 from rest_framework import serializers
 from requests.models import *
 
