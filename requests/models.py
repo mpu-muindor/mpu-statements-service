@@ -31,7 +31,7 @@ class RequestType(models.Model):
 
 class Request(models.Model):
     """
-    Класс запросов (справки, заявки) пользователя
+    Класс запросов (справки, заявки) студента
     """
     status_approved = 1
     status_rejected = 2
@@ -62,3 +62,28 @@ class Request(models.Model):
         verbose_name = "Справки, заявления"
         verbose_name_plural = verbose_name
         ordering = ["datetime"]
+
+
+class ResponsibleUnit(models.Model):
+    """
+    Таблица ответственных подразделений
+    """
+    name = models.CharField(verbose_name="Название подразделения", max_length=1500)
+
+    def __str__(self):
+        return self.name[:50] + '...'
+
+    class Meta:
+        verbose_name = "подразделение"
+        verbose_name_plural = "подразделения"
+
+
+class HelpService(models.Model):
+    """
+    Цифровые сервисы (запросы) для преподавателей
+    """
+    title = models.ForeignKey(RequestType, on_delete=models.CASCADE, verbose_name="Тема заявки")
+    request_text = models.CharField(verbose_name="Текст заявки", max_length=5000)
+    responsible_unit = models.ForeignKey(ResponsibleUnit, on_delete=models.CASCADE,
+                                         verbose_name="Ответственное подразделение")
+    datetime = models.DateTimeField(verbose_name="Дата, время", auto_now_add=True)
