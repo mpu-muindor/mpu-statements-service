@@ -8,14 +8,14 @@ class Address(models.Model):
     name = models.CharField(verbose_name="Структурное подразделение, адрес", max_length=1500)
 
     def __str__(self):
-        return self.name[:50] + '...'
+        return self.name
 
     class Meta:
-        verbose_name = "адрес"
+        verbose_name = "Адрес корпусов"
         verbose_name_plural = "адреса"
 
 
-class RequestType(models.Model):
+class RequestStudentType(models.Model):
     """
     Виды справок (Об обучении, в ПРФ, об отсрочке и т.д.)
     """
@@ -29,7 +29,7 @@ class RequestType(models.Model):
         verbose_name_plural = "виды справок"
 
 
-class Request(models.Model):
+class RequestStudent(models.Model):
     """
     Класс запросов (справки, заявки) студента
     """
@@ -45,7 +45,7 @@ class Request(models.Model):
     # TODO: add user info (name, group, phone, email, etc...)
     datetime = models.DateTimeField(verbose_name="Дата, время", auto_now_add=True)
     reg_number = models.CharField(verbose_name="Рег. номер", max_length=13)
-    request_title = models.ForeignKey(RequestType, on_delete=models.CASCADE, verbose_name="Запрос")
+    request_title = models.ForeignKey(RequestStudentType, on_delete=models.CASCADE, verbose_name="Запрос")
     request_text = models.CharField(verbose_name="Текст запроса", max_length=5000)
     status = models.SmallIntegerField(verbose_name="Статус", choices=STATUSES, default=status_approved)
     date_for_status = models.DateTimeField(verbose_name="Дата статуса", auto_now=True)
@@ -53,37 +53,15 @@ class Request(models.Model):
     remark = models.CharField(verbose_name="Примечание", max_length=1000, blank=True, null=True)
     # TODO: add user comments and images from docs
 
+    def get_addr(self):
+        return self.address.name
+
     def __str__(self):
         return "{} {} {}".format(
             self.reg_number, self.request_title.name, self.status
         )
 
     class Meta:
-        verbose_name = "Справки, заявления"
+        verbose_name = "Справки, заявления для студентов"
         verbose_name_plural = verbose_name
         ordering = ["datetime"]
-
-
-class ResponsibleUnit(models.Model):
-    """
-    Таблица ответственных подразделений
-    """
-    name = models.CharField(verbose_name="Название подразделения", max_length=1500)
-
-    def __str__(self):
-        return self.name[:50] + '...'
-
-    class Meta:
-        verbose_name = "подразделение"
-        verbose_name_plural = "подразделения"
-
-
-class HelpService(models.Model):
-    """
-    Цифровые сервисы (запросы) для преподавателей
-    """
-    title = models.ForeignKey(RequestType, on_delete=models.CASCADE, verbose_name="Тема заявки")
-    request_text = models.CharField(verbose_name="Текст заявки", max_length=5000)
-    responsible_unit = models.ForeignKey(ResponsibleUnit, on_delete=models.CASCADE,
-                                         verbose_name="Ответственное подразделение")
-    datetime = models.DateTimeField(verbose_name="Дата, время", auto_now_add=True)

@@ -1,9 +1,7 @@
-from django.http import JsonResponse
-from rest_framework import viewsets, status, views
+from rest_framework import status, views
 from rest_framework.response import Response
 
-from requests.models import Request
-from requests.serializers import *
+from requests_students.serializers import *
 
 
 class EdRequestView(views.APIView):
@@ -196,16 +194,9 @@ class MainPageRequestViewSet(views.APIView):
     """
 
     def get(self, request, format=None):
-        queryset = Request.objects.all()
-        serializer = MainPageRequestSerializer(queryset, many=True)
+        queryset = RequestStudent.objects.all()
+        serializer = RequestHistoryStudentSerializer(queryset, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
-
-    def post(self, request, format=None):
-        serializer = MainPageRequestSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 class AddressListViewSet(views.APIView):
@@ -225,6 +216,6 @@ class RequestTypeListViewSet(views.APIView):
     """
 
     def get(self, request, format=None):
-        queryset = RequestType.objects.all()
+        queryset = RequestStudentType.objects.all()
         serializer = RequestTypeSerializer(queryset, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)

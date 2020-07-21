@@ -1,16 +1,74 @@
 from rest_framework import serializers
-from requests.models import *
+from requests_students.models import Address, RequestStudentType, RequestStudent
 
 
-def get_addresses():
-    try:
+def create_addresses():
+    """Создание списка всех адресов университета"""
+    addresses = [
+        "Отделение «На Большой Семеновской» центра по работе со студентами Ул. Большая Семеновская, 38; ауд. В-107. Тел. (495) 223-05-23 (доб. 1375, 1215, 1105) ; crs-bs@mospolytech.ru",
+        "Отделение «На Автозаводской» центра по работе со студентами Ул. Автозаводская, 16, ауд. 2315. Тел. (495) 276-33-30 доб. 2285",
+        "Отделение «На Автозаводской» центра по работе со студентами ул. Автозаводская, 16, ауд. 2315. Тел. (495) 276-37-30 доб. 2256, 2257,2285; crs-av@mospolytech.ru",
+        "Отделение «На Прянишникова» центра по работе со студентами Ул. Михалковская, 7, ауд. 3307. Тел. (495) 223-05-23 доб. 4059, 4060, 4061; crs-mikhalka@mospolytech.ru",
+        "Отделение «На Павла Корчагина» центра по работе со студентами Ул. Павла Корчагина, 22, ауд. 213. Тел. (495) 223-05-23 доб. 3043, 3044, 3045; crs-pk@mospolytech.ru",
+        "Отделение «На Прянишникова» центра по работе со студентами ул. Прянишникова, 2а, ауд. 1311. Тел. (495) 223-05-23 доб. 4052, 4056, 4057; crs-pryaniki@mospolytech.ru",
+        "Отделение «На Садовой-Спасской» центра по работе со студентами ул. Садовая-Спасская, 6, ауд. 4107, 4108. Тел. (495) 223-05-23 доб. 4068, 4069, 4070; crs-sady@mospolytech.ru",
+
+        "Договорной отдел Москва, Большая Семеновская, д. 38, ауд. Н-402, тел. (495) 223-05-40, (495) 223-05-23 доб. 1247, 1549, 1550",
+        "Мобилизационный отдел г. Москва, ул. Б. Семёновская, д. 38, корп. А, кабинеты А-324, 325. Тел.: (495) 223-05-23, доб. 1225",
+        "Отдел практики и трудоустройства 107023, г. Москва, ул. Б. Семёновская, д. 38, корпус «А», ауд. А - 319",
+        "Профсоюзная организация работников и обучающихся 107023, г. Москва, ул. Б. Семеновская, д. 38, аудитория В-202. Тел. 495 223-05-31"
+    ]
+    for address in addresses:
+        Address.objects.get_or_create(name=address)
+
+
+create_addresses()
+
+
+def get_addresses(filter_name=None):
+    """
+    Получить список всех адресов
+    """
+    if filter_name:
+        try:
+            addresses = list(Address.objects.filter(name__contains=filter_name))
+        except:
+            addresses = list()
+    else:
         addresses = list(Address.objects.all())
-    except:
-        addresses = list()
     choices = tuple(
         (a.id, a.name) for a in addresses
     )
     return choices
+
+
+def get_request_type_and_num(request_name):
+    """
+    Получить тип справки и соответствующий регистрационный номер
+    :param request_name: Название типа справки
+    """
+    obj, _ = RequestStudentType.objects.get_or_create(name=request_name)
+
+    try:
+        num = RequestStudent.objects.filter(request_title__name=request_name).last().id + 1
+    except AttributeError:
+        num = 1
+
+    return obj, num
+
+
+def get_default_address(name=None):
+    """
+    Получить дефолтный адрес выдачи справок
+    """
+    if name:
+        obj, _ = Address.objects.get_or_create(name=name)
+    else:
+        # Подразумевается ЦРС На Большой Семёновской
+        obj, _ = Address.objects.get_or_create(name="Отделение «На Большой Семеновской» центра по работе со "
+                                                    "студентами Ул. Большая Семеновская, 38; ауд. В-107. Тел. (495) "
+                                                    "223-05-23 (доб. 1375, 1215, 1105) ; crs-bs@mospolytech.ru")
+    return obj
 
 
 class EdRequestSerializer(serializers.Serializer):
@@ -39,6 +97,7 @@ class EdRequestSerializer(serializers.Serializer):
     user_comment = serializers.CharField(required=False, allow_null=True)
 
     def save(self, **kwargs):
+        # Request text formatting
         temp = 'моим письменным заявлением.' \
             if self.validated_data["radio1"] else f'отчислением из {self.validated_data["university_out"]} в ' \
                                                   f'{self.validated_data["year_out"]} году.'
@@ -49,15 +108,16 @@ class EdRequestSerializer(serializers.Serializer):
         if self.validated_data.get("user_comment"):
             text += f' Комментарий: {self.validated_data["user_comment"]}'
 
-        try:
-            num = Request.objects.filter(request_title__id=1).last().id + 1
-        except AttributeError:
-            num = 1
-        Request.objects.create(
+        # Get request title
+        request_name = "Справка о прослушанных дисциплинах за период обучения (справка об обучении)"
+        obj, num = get_request_type_and_num(request_name)
+
+        # Create request
+        RequestStudent.objects.create(
             reg_number=f"ED{num}",
-            request_title=RequestType.objects.get(pk=1),
+            request_title=obj,
             request_text=text,
-            address=Address.objects.get(pk=1),
+            address=get_default_address(),
         )
 
 
@@ -68,7 +128,7 @@ class StatusRequestSerializer(serializers.Serializer):
 
     phone = serializers.CharField(max_length=18)
     email = serializers.EmailField()
-    address = serializers.ChoiceField(choices=get_addresses())
+    address = serializers.ChoiceField(choices=get_addresses("центра по работе со студентами"))
     to_whom = serializers.CharField(max_length=500)
     user_comment = serializers.CharField(required=False, allow_null=True)
 
@@ -76,13 +136,13 @@ class StatusRequestSerializer(serializers.Serializer):
         text = f'Дана для предоставления {self.validated_data["to_whom"]}.'
         if self.validated_data.get("user_comment"):
             text += f' Комментарий: {self.validated_data["user_comment"]}'
-        try:
-            num = Request.objects.filter(request_title__id=2).last().id + 1
-        except AttributeError:
-            num = 1
-        Request.objects.create(
+
+        request_name = "Справка о прохождении обучения в университете (о статусе обучающегося) по месту требования"
+        obj, num = get_request_type_and_num(request_name)
+
+        RequestStudent.objects.create(
             reg_number=f"SR{num}",
-            request_title=RequestType.objects.get(pk=2),
+            request_title=obj,
             request_text=text,
             address=Address.objects.get(pk=self.validated_data["address"]),
         )
@@ -95,7 +155,7 @@ class SobesRequestSerializer(serializers.Serializer):
 
     phone = serializers.CharField(max_length=18)
     email = serializers.EmailField()
-    address = serializers.ChoiceField(choices=get_addresses())
+    address = serializers.ChoiceField(choices=get_addresses("центра по работе со студентами"))
     order_num = serializers.CharField()
     order_date = serializers.CharField()
     to_whom = serializers.CharField(max_length=500)
@@ -106,13 +166,13 @@ class SobesRequestSerializer(serializers.Serializer):
                f'Дана для предоставления {self.validated_data["to_whom"]}.'
         if self.validated_data.get("user_comment"):
             text += f' Комментарий: {self.validated_data["user_comment"]}'
-        try:
-            num = Request.objects.filter(request_title__id=3).last().id + 1
-        except AttributeError:
-            num = 1
-        Request.objects.create(
+
+        request_name = "Справка в социальные учреждения (Пенсионный фонд, УСЗН и пр.)"
+        obj, num = get_request_type_and_num(request_name)
+
+        RequestStudent.objects.create(
             reg_number=f"SC{num}",
-            request_title=RequestType.objects.get(pk=3),
+            request_title=obj,
             request_text=text,
             address=Address.objects.get(pk=self.validated_data["address"]),
         )
@@ -132,20 +192,19 @@ class CallRequestSerializer(serializers.Serializer):
     def save(self, **kwargs):
         date_from = self.validated_data["date_from"].strftime("%d.%m.%Y")
         date_to = self.validated_data["date_to"].strftime("%d.%m.%Y")
-
         day_delta = (self.validated_data["date_to"] - self.validated_data["date_from"]).days
         text = f'Период гарантий с: {date_from} по: {date_to}. Кол-во дней: {day_delta}.'
         if self.validated_data.get("user_comment"):
             text += f' Комментарий: {self.validated_data["user_comment"]}'
-        try:
-            num = Request.objects.filter(request_title__id=4).last().id + 1
-        except AttributeError:
-            num = 1
-        Request.objects.create(
+
+        request_name = "Справка-вызов"
+        obj, num = get_request_type_and_num(request_name)
+
+        RequestStudent.objects.create(
             reg_number=f"SPV{num}",
-            request_title=RequestType.objects.get(pk=4),
+            request_title=obj,
             request_text=text,
-            address=Address.objects.get(pk=1),
+            address=get_default_address(),
         )
 
 
@@ -162,21 +221,21 @@ class PersDataRequestSerializer(serializers.Serializer):
     def save(self, **kwargs):
         text = f'Прошу внести изменения в мои персональные данные и в дальнейшем именовать меня ' + \
                f'{self.validated_data["first_last_name"]} в связи с {self.validated_data["reason"]}'
-        try:
-            num = Request.objects.filter(request_title__id=5).last().id + 1
-        except AttributeError:
-            num = 1
-        Request.objects.create(
+
+        request_name = "Запрос на изменение персональных данных"
+        obj, num = get_request_type_and_num(request_name)
+
+        RequestStudent.objects.create(
             reg_number=f"PD{num}",
-            request_title=RequestType.objects.get(pk=5),
+            request_title=obj,
             request_text=text,
-            address=Address.objects.get(pk=1),
+            address=get_default_address(),
         )
 
 
 class PassRestoreRequestSerializer(serializers.Serializer):
     """
-    Заявление на восстановление магнитного пропуска
+    Запрос на восстановление магнитного пропуска
     """
     phone = serializers.CharField(max_length=18)
     email = serializers.EmailField()
@@ -184,15 +243,15 @@ class PassRestoreRequestSerializer(serializers.Serializer):
 
     def save(self, **kwargs):
         text = f'Прошу восстановить мой магнитный пропуск в связи с {self.validated_data["reason"]}'
-        try:
-            num = Request.objects.filter(request_title__id=6).last().id + 1
-        except AttributeError:
-            num = 1
-        Request.objects.create(
+
+        request_name = "Запрос на восстановление магнитного пропуска"
+        obj, num = get_request_type_and_num(request_name)
+
+        RequestStudent.objects.create(
             reg_number=f"RP{num}",
-            request_title=RequestType.objects.get(pk=6),
+            request_title=obj,
             request_text=text,
-            address=Address.objects.get(pk=1),
+            address=get_default_address(),
         )
 
 
@@ -226,18 +285,19 @@ class PracticeLetterRequestSerializer(serializers.Serializer):
         # TODO: add user!!!
         date_from = self.validated_data["date_from"].strftime("%d.%m.%Y")
         date_to = self.validated_data["date_to"].strftime("%d.%m.%Y")
-        text = f'ФИО студента,Группа:,Период: с {date_from} до {date_to},' + \
-               f'Место практики: {self.validated_data["organization_name"]},' + \
-               f'Руководитель: {self.validated_data["organization_head"]},Специальность:,Тел:,E-mail:'
-        try:
-            num = Request.objects.filter(request_title__id=8).last().id + 1
-        except AttributeError:
-            num = 1
-        Request.objects.create(
+        text = f'ФИО студента,\nГруппа:,\nПериод: с {date_from} до {date_to},\n' + \
+               f'Место практики: {self.validated_data["organization_name"]},\n' + \
+               f'Руководитель: {self.validated_data["organization_head"]}\n,Специальность:,\nТел:,\nE-mail:'
+
+        request_name = "Заказать сопроводительное письмо на практику"
+        obj, num = get_request_type_and_num(request_name)
+
+        RequestStudent.objects.create(
             reg_number=f"PRL{num}",
-            request_title=RequestType.objects.get(pk=8),
+            request_title=obj,
             request_text=text,
-            address=Address.objects.get(pk=1),  # Отдел практики и трудоустройства
+            address=get_default_address(name="Отдел практики и трудоустройства 107023, г. Москва, ул. Б. Семёновская, "
+                                             "д. 38, корпус «А», ауд. А - 319"),
         )
 
 
@@ -294,15 +354,16 @@ class PrDonateRequestSerializer(serializers.Serializer):
                f'в {self.validated_data["year"]} году в связи с тем, что: {choice}. ' + \
                f'Номер членского профсоюзного билета: {self.validated_data["prof_ticket"]}. ' + \
                f'Адрес по месту регистрации: {self.validated_data["user_address"]}.'
-        try:
-            num = Request.objects.filter(request_title__id=11).last().id + 1
-        except AttributeError:
-            num = 1
-        Request.objects.create(
+
+        request_name = "Оформить дотацию Мэрии г. Москвы"
+        obj, num = get_request_type_and_num(request_name)
+
+        RequestStudent.objects.create(
             reg_number=f"DN{num}",
-            request_title=RequestType.objects.get(pk=11),  # адрес профсоюза на БС
+            request_title=obj,
             request_text=text,
-            address=Address.objects.get(pk=1),
+            address=get_default_address(name="Профсоюзная организация работников и обучающихся 107023, г. Москва, "
+                                             "ул. Б. Семеновская, д. 38, аудитория В-202. Тел. 495 223-05-31"),
         )
 
 
@@ -387,24 +448,25 @@ class MatHelpRequestSerializer(serializers.Serializer):
             27: "с тем, что я являюсь обучающимся, проживающим в общежитиях Московского Политеха в условиях реализации мероприятий по предотвращению распространения коронавирусной инфекции COVID-19",
         }
         temp_reasons = list(dict(self.REASONS).get(key) for key in self.validated_data["reason"])
-        text = f'Основания: {", ".join(temp_reasons)}\n' \
+        text = f'Основания: {", ".join(temp_reasons)}.\n' \
                f'Прошу оказать мне материальную помощь '
-        if len(list(self.validated_data["reason"])) == 1:
-            text += f'в связи {choises.get(list(self.validated_data["reason"])[0])}.\n'
-        else:
-            temp_reasons = list(choises.get(key) for key in self.validated_data["reason"])
-            reasons = ', а также '.join(temp_reasons)
-            text += reasons + '.\n'
-        text += f'Подразделение: {self.validated_data["department"]}\nКурс: \nГруппа: \nОснова обучения: \nКатегория обучаещегося: \nКонтактный телефон: \n'
-        try:
-            num = Request.objects.filter(request_title__id=12).last().id + 1
-        except AttributeError:
-            num = 1
-        Request.objects.create(
+
+        temp_reasons = list(choises.get(key) for key in self.validated_data["reason"])
+        reasons = ', а также '.join(temp_reasons)
+
+        text += reasons + '.\n'
+        text += f'Подразделение: {self.validated_data["department"]}\nКурс: \nГруппа: \nОснова обучения: \nКатегория ' \
+                f'обучаещегося: \nКонтактный телефон: \n '
+
+        request_name = "Заявка на материальную помощь"
+        obj, num = get_request_type_and_num(request_name)
+
+        RequestStudent.objects.create(
             reg_number=f"MR{num}",
-            request_title=RequestType.objects.get(pk=12),
+            request_title=obj,
             request_text=text,
-            address=Address.objects.get(pk=1),
+            address=get_default_address(name="Профсоюзная организация работников и обучающихся 107023, г. Москва, "
+                                             "ул. Б. Семеновская, д. 38, аудитория В-202. Тел. 495 223-05-31"),
         )
 
 
@@ -434,15 +496,16 @@ class SocStipRequestSerializer(serializers.Serializer):
 
     def save(self, **kwargs):
         text = f'Основание для получения социальнй стипендии: {dict(self.REASONS).get(self.validated_data["reason"])}.'
-        try:
-            num = Request.objects.filter(request_title__id=13).last().id + 1
-        except AttributeError:
-            num = 1
-        Request.objects.create(
+
+        request_name = "Оформить социальную стипендию"
+        obj, num = get_request_type_and_num(request_name)
+
+        RequestStudent.objects.create(
             reg_number=f"PS{num}",
-            request_title=RequestType.objects.get(pk=13),
+            request_title=obj,
             request_text=text,
-            address=Address.objects.get(pk=1),
+            address=get_default_address(name="Профсоюзная организация работников и обучающихся 107023, г. Москва, "
+                                             "ул. Б. Семеновская, д. 38, аудитория В-202. Тел. 495 223-05-31"),
         )
 
 
@@ -499,15 +562,16 @@ class ArmyRequestSerializer(serializers.Serializer):
             text += f'Жена: {self.validated_data["wife"]}\n'
         if self.validated_data.get("user_temp_address"):
             text += f'Временная регистрация: {self.validated_data["user_temp_address"]}\n'
-        try:
-            num = Request.objects.filter(request_title__id=14).last().id + 1
-        except AttributeError:
-            num = 1
-        Request.objects.create(
+
+        request_name = "Справка для получения отсрочки от призыва на военную службу"
+        obj, num = get_request_type_and_num(request_name)
+
+        RequestStudent.objects.create(
             reg_number=f"VK{num}",
-            request_title=RequestType.objects.get(pk=14),
+            request_title=obj,
             request_text=text,
-            address=Address.objects.get(pk=1),
+            address=get_default_address(name="Мобилизационный отдел г. Москва, ул. Б. Семёновская, д. 38, корп. А, "
+                                             "кабинеты А-324, 325. Тел.: (495) 223-05-23, доб. 1225"),
         )
 
 
@@ -527,26 +591,31 @@ class FreeRequestSerializer(serializers.Serializer):
         text = self.validated_data["text"]
         if self.validated_data.get("user_comment"):
             text += f' Комментарий: {self.validated_data["user_comment"]}'
-        try:
-            num = Request.objects.filter(request_title__id=15).last().id + 1
-        except AttributeError:
-            num = 1
-        Request.objects.create(
+
+        request_name = "Произвольный запрос"
+        obj, num = get_request_type_and_num(request_name)
+
+        RequestStudent.objects.create(
             reg_number=f"FF{num}",
-            request_title=RequestType.objects.get(pk=15),
+            request_title=obj,
             request_text=text,
             address=Address.objects.get(pk=self.validated_data["address"]),
         )
 
 
-class MainPageRequestSerializer(serializers.ModelSerializer):
+class RequestHistoryStudentSerializer(serializers.ModelSerializer):
     """
     История запросов справок пользователя
     """
     # Django Model.get_FOO_display
+    request_title = serializers.SerializerMethodField(source="get_request_title")
     datetime = serializers.SerializerMethodField(source="get_formatted_datetime")
-    status = serializers.ChoiceField(Request.STATUSES)
+    status = serializers.CharField(source="get_status_display")
+    address = serializers.CharField(source="get_addr")
     date_for_status = serializers.SerializerMethodField(source="get_date_for_status")
+
+    def get_request_title(self, obj):
+        return obj.request_title.name
 
     def get_date_for_status(self, obj):
         return obj.date_for_status.strftime("%d.%m.%Y %H:%M")
@@ -555,7 +624,7 @@ class MainPageRequestSerializer(serializers.ModelSerializer):
         return obj.datetime.strftime("%d.%m.%Y %H:%M")
 
     class Meta:
-        model = Request
+        model = RequestStudent
         fields = ("datetime", "reg_number", "request_title", "request_text",
                   "status", "date_for_status", "address", "remark")
 
@@ -568,5 +637,5 @@ class AddressSerializer(serializers.ModelSerializer):
 
 class RequestTypeSerializer(serializers.ModelSerializer):
     class Meta:
-        model = RequestType
+        model = RequestStudentType
         fields = ("id", "name",)
