@@ -188,7 +188,7 @@ class FreeRequestView(views.APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-class MainPageRequestViewSet(views.APIView):
+class RequestHistoryStudentView(views.APIView):
     """
     История запросов справок пользователя
     """

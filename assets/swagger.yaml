@@ -1,9 +1,6 @@
 swagger: "2.0"
 info:
-  description: >
-    ## Сервис по оформлению справок, заявлений и запросов Московского Политеха.
-
-    # Пока без работы с пользователем
+  description: ## Сервис по оформлению справок, заявлений и запросов Московского Политеха.
   version: "1.0.0"
   title: "MPU Statements Service"
   license:
@@ -11,8 +8,6 @@ info:
 host: "127.0.0.1:8000/"
 basePath: "statements"
 tags:
-- name: "requests"
-  description: "История справок пользователя"
 - name: "admin"
   description: "Админка сервиса. Логин/пароль — admin/admin"
 - name: "student"
@@ -20,12 +15,12 @@ tags:
 - name: "teacher"
   description: "Справки, доступные преподавателю. Пока тут пусто"
 paths:
-  /requests/:
+  /student/requests/:
     get:
       tags:
-        - "requests"
+        - "student"
       summary: "История запросов"
-      description: "История запросов справок пользователя для главной страницы (пока без пользователя)"
+      description: "История запросов справок студента для главной страницы (пока без пользователя)"
       produces:
         - "application/json"
       parameters: []
@@ -35,11 +30,11 @@ paths:
           schema:
             type: "array"
             items:
-              $ref: "#/definitions/Request"
-  /addresses/:
+              $ref: "#/definitions/RequestStudent"
+  /student/addresses/:
     get:
       tags:
-        - "requests"
+        - "student"
       summary: "Список адресов и структурных подразделений"
       description: "Список адресов и структурных подразделений"
       produces:
@@ -52,10 +47,10 @@ paths:
             type: "array"
             items:
               $ref: "#/definitions/Address"
-  /request_types/:
+  /student/request_types/:
     get:
       tags:
-        - "requests"
+        - "student"
       summary: "Список типов справок"
       description: "Список типов справок"
       produces:
@@ -67,7 +62,7 @@ paths:
           schema:
             type: "array"
             items:
-              $ref: "#/definitions/RequestType"
+              $ref: "#/definitions/RequestStudentType"
   /student/education/:
     post:
       tags:
@@ -473,7 +468,7 @@ paths:
       summary: "Оформление дотации Мэрии г. Москвы"
       description: "Оформление дотации Мэрии г. Москвы"
       consumes:
-        - application/x-www-form-urlencoded
+        - multipart/form-data
       produces:
         - "application/json"
       parameters:
@@ -872,8 +867,2767 @@ paths:
           description: "Текст справки создан"
         "400":
           description: "Bad Request"
+
+  /teacher/requests/:
+    get:
+      tags:
+        - "teacher"
+      summary: "История запросов"
+      description: "История запросов справок преподавателя для главной страницы (пока без пользователя)"
+      produces:
+        - "application/json"
+      parameters: []
+      responses:
+        "200":
+          description: "История всех запросов преподавателя"
+          schema:
+            type: "array"
+            items:
+              $ref: "#/definitions/RequestTeacher"
+  /teacher/new_hardware/:
+    post:
+      tags:
+        - "teacher"
+      summary: "Получение нового компьютерного оборудования"
+      description: "Получение нового компьютерного оборудования"
+      consumes:
+        - multipart/form-data
+      produces:
+        - "application/json"
+      parameters:
+        - name: "fio"
+          in: "formData"
+          description: "ФИО"
+          required: true
+          type: "string"
+        - name: "structural_unit"
+          in: "formData"
+          description: "Структурное подразделение"
+          required: true
+          type: "string"
+        - name: "position"
+          in: "formData"
+          description: "Должность"
+          required: true
+          type: "string"
+        - name: "email"
+          in: "formData"
+          description: "Адрес электронной почты"
+          required: true
+          type: string
+          format: email
+        - name: "work_phone"
+          in: "formData"
+          description: "Рабочий телефон"
+          type: "string"
+        - name: "mobile_phone"
+          in: "formData"
+          description: "Мобильный телефон"
+          required: true
+          type: "string"
+        - name: "work_address_corpus"
+          in: "formData"
+          description: >
+            Площадка:
+
+            + 1, Б. Семёновская, д. 38
+
+            + 2, 1-я Дубровская, д. 16а
+
+            + 3, Павла Корчагина, д. 22
+
+            + 4, Автозаводская, д. 16
+
+            + 5, Лефортовский вал, д. 26
+
+            + 6, Прянишникова, д. 2А
+
+            + 7, Садово-Спасская, д. 6
+
+            + 8, Михалковская, д. 7
+
+          required: true
+          type: "array"
+          items:
+            type: "integer"
+            enum:
+              [1, 2, 3, 4, 5, 6, 7, 8]
+        - name: "work_address_room"
+          required: true
+          in: "formData"
+          type: "string"
+          description: "Номер аудитории"
+        - name: "request_title"
+          in: "formData"
+          description: >
+            Тема заявки:
+
+            + 1, "Получение нового компьютерного оборудования
+
+            + 2, "Подключение компьютера, МФУ, телефона, WiFi
+
+            + 3, "Обслуживание принтеров, МФУ
+
+            + 4, "Вопрос по СЭД Directum и 1С
+
+            + 5, "Вопрос по Личному кабинету
+
+            + 6, "Прочее ИТ-обслуживание
+
+            + 7, "Справка с места работы
+
+            + 8, "Справка на визу
+
+            + 9, "Справка о стаже работы
+
+            10, "Справка о количестве неиспользованных дней отпуска
+
+            11, "Копия трудовой книжки
+
+            12, "Копии документов из личного дела
+
+            13, "Справка о работе на условиях внешнего совместительства для внесения стажа в трудовую книжку
+
+            14, "Справка по форме 2-НДФЛ
+
+            15, "Справка о выплате (не выплате) единовременного пособия на рождение ребенка
+
+            16, "Справка об отпуске по уходу за ребенком до 1,5 и 3 лет
+
+            17, "Справка о ежемесячных выплатах сотрудника, находящегося в отпуске по уходу за ребенком (декрет)
+
+          required: true
+          type: "array"
+          items:
+            type: "integer"
+            enum:
+              [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17]
+        - name: "request_text"
+          in: "formData"
+          description: "Текст заявки"
+          type: "string"
+        - name: "docs"
+          in: "formData"
+          description: "Присоединить файл (при необходимости)"
+          type: "file"
+          nullable: true
+      responses:
+        "201":
+          description: "Текст справки создан"
+        "400":
+          description: "Bad Request"
+  /teacher/new_computer/:
+    post:
+      tags:
+        - "teacher"
+      summary: "Подключение компьютера, МФУ, телефона, WiFi"
+      description: "Подключение компьютера, МФУ, телефона, WiFi"
+      consumes:
+        - multipart/form-data
+      produces:
+        - "application/json"
+      parameters:
+        - name: "fio"
+          in: "formData"
+          description: "ФИО"
+          required: true
+          type: "string"
+        - name: "structural_unit"
+          in: "formData"
+          description: "Структурное подразделение"
+          required: true
+          type: "string"
+        - name: "position"
+          in: "formData"
+          description: "Должность"
+          required: true
+          type: "string"
+        - name: "email"
+          in: "formData"
+          description: "Адрес электронной почты"
+          required: true
+          type: string
+          format: email
+        - name: "work_phone"
+          in: "formData"
+          description: "Рабочий телефон"
+          type: "string"
+        - name: "mobile_phone"
+          in: "formData"
+          description: "Мобильный телефон"
+          required: true
+          type: "string"
+        - name: "work_address_corpus"
+          in: "formData"
+          description: >
+            Площадка:
+
+            + 1, Б. Семёновская, д. 38
+
+            + 2, 1-я Дубровская, д. 16а
+
+            + 3, Павла Корчагина, д. 22
+
+            + 4, Автозаводская, д. 16
+
+            + 5, Лефортовский вал, д. 26
+
+            + 6, Прянишникова, д. 2А
+
+            + 7, Садово-Спасская, д. 6
+
+            + 8, Михалковская, д. 7
+
+          required: true
+          type: "array"
+          items:
+            type: "integer"
+            enum:
+              [1, 2, 3, 4, 5, 6, 7, 8]
+        - name: "work_address_room"
+          required: true
+          in: "formData"
+          type: "string"
+          description: "Номер аудитории"
+        - name: "request_title"
+          in: "formData"
+          description: >
+            Тема заявки:
+
+            + 1, "Получение нового компьютерного оборудования
+
+            + 2, "Подключение компьютера, МФУ, телефона, WiFi
+
+            + 3, "Обслуживание принтеров, МФУ
+
+            + 4, "Вопрос по СЭД Directum и 1С
+
+            + 5, "Вопрос по Личному кабинету
+
+            + 6, "Прочее ИТ-обслуживание
+
+            + 7, "Справка с места работы
+
+            + 8, "Справка на визу
+
+            + 9, "Справка о стаже работы
+
+            10, "Справка о количестве неиспользованных дней отпуска
+
+            11, "Копия трудовой книжки
+
+            12, "Копии документов из личного дела
+
+            13, "Справка о работе на условиях внешнего совместительства для внесения стажа в трудовую книжку
+
+            14, "Справка по форме 2-НДФЛ
+
+            15, "Справка о выплате (не выплате) единовременного пособия на рождение ребенка
+
+            16, "Справка об отпуске по уходу за ребенком до 1,5 и 3 лет
+
+            17, "Справка о ежемесячных выплатах сотрудника, находящегося в отпуске по уходу за ребенком (декрет)
+
+          required: true
+          type: "array"
+          items:
+            type: "integer"
+            enum:
+              [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17]
+        - name: "request_text"
+          in: "formData"
+          description: "Текст заявки"
+          type: "string"
+        - name: "docs"
+          in: "formData"
+          description: "Присоединить файл (при необходимости)"
+          type: "file"
+          nullable: true
+      responses:
+        "201":
+          description: "Текст справки создан"
+        "400":
+          description: "Bad Request"
+  /teacher/help_mfu/:
+    post:
+      tags:
+        - "teacher"
+      summary: "Обслуживание принтеров, МФУ"
+      description: "Обслуживание принтеров, МФУ"
+      consumes:
+        - multipart/form-data
+      produces:
+        - "application/json"
+      parameters:
+        - name: "fio"
+          in: "formData"
+          description: "ФИО"
+          required: true
+          type: "string"
+        - name: "structural_unit"
+          in: "formData"
+          description: "Структурное подразделение"
+          required: true
+          type: "string"
+        - name: "position"
+          in: "formData"
+          description: "Должность"
+          required: true
+          type: "string"
+        - name: "email"
+          in: "formData"
+          description: "Адрес электронной почты"
+          required: true
+          type: string
+          format: email
+        - name: "work_phone"
+          in: "formData"
+          description: "Рабочий телефон"
+          type: "string"
+        - name: "mobile_phone"
+          in: "formData"
+          description: "Мобильный телефон"
+          required: true
+          type: "string"
+        - name: "work_address_corpus"
+          in: "formData"
+          description: >
+            Площадка:
+
+            + 1, Б. Семёновская, д. 38
+
+            + 2, 1-я Дубровская, д. 16а
+
+            + 3, Павла Корчагина, д. 22
+
+            + 4, Автозаводская, д. 16
+
+            + 5, Лефортовский вал, д. 26
+
+            + 6, Прянишникова, д. 2А
+
+            + 7, Садово-Спасская, д. 6
+
+            + 8, Михалковская, д. 7
+
+          required: true
+          type: "array"
+          items:
+            type: "integer"
+            enum:
+              [1, 2, 3, 4, 5, 6, 7, 8]
+        - name: "work_address_room"
+          required: true
+          in: "formData"
+          type: "string"
+          description: "Номер аудитории"
+        - name: "request_title"
+          in: "formData"
+          description: >
+            Тема заявки:
+
+            + 1, "Получение нового компьютерного оборудования
+
+            + 2, "Подключение компьютера, МФУ, телефона, WiFi
+
+            + 3, "Обслуживание принтеров, МФУ
+
+            + 4, "Вопрос по СЭД Directum и 1С
+
+            + 5, "Вопрос по Личному кабинету
+
+            + 6, "Прочее ИТ-обслуживание
+
+            + 7, "Справка с места работы
+
+            + 8, "Справка на визу
+
+            + 9, "Справка о стаже работы
+
+            10, "Справка о количестве неиспользованных дней отпуска
+
+            11, "Копия трудовой книжки
+
+            12, "Копии документов из личного дела
+
+            13, "Справка о работе на условиях внешнего совместительства для внесения стажа в трудовую книжку
+
+            14, "Справка по форме 2-НДФЛ
+
+            15, "Справка о выплате (не выплате) единовременного пособия на рождение ребенка
+
+            16, "Справка об отпуске по уходу за ребенком до 1,5 и 3 лет
+
+            17, "Справка о ежемесячных выплатах сотрудника, находящегося в отпуске по уходу за ребенком (декрет)
+
+          required: true
+          type: "array"
+          items:
+            type: "integer"
+            enum:
+              [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17]
+        - name: "request_text"
+          in: "formData"
+          description: "Текст заявки"
+          type: "string"
+        - name: "docs"
+          in: "formData"
+          description: "Присоединить файл (при необходимости)"
+          type: "file"
+          nullable: true
+      responses:
+        "201":
+          description: "Текст справки создан"
+        "400":
+          description: "Bad Request"
+  /teacher/help_1c/:
+    post:
+      tags:
+        - "teacher"
+      summary: "Вопрос по СЭД Directum и 1С"
+      description: "Вопрос по СЭД Directum и 1С"
+      consumes:
+        - multipart/form-data
+      produces:
+        - "application/json"
+      parameters:
+        - name: "fio"
+          in: "formData"
+          description: "ФИО"
+          required: true
+          type: "string"
+        - name: "structural_unit"
+          in: "formData"
+          description: "Структурное подразделение"
+          required: true
+          type: "string"
+        - name: "position"
+          in: "formData"
+          description: "Должность"
+          required: true
+          type: "string"
+        - name: "email"
+          in: "formData"
+          description: "Адрес электронной почты"
+          required: true
+          type: string
+          format: email
+        - name: "work_phone"
+          in: "formData"
+          description: "Рабочий телефон"
+          type: "string"
+        - name: "mobile_phone"
+          in: "formData"
+          description: "Мобильный телефон"
+          required: true
+          type: "string"
+        - name: "work_address_corpus"
+          in: "formData"
+          description: >
+            Площадка:
+
+            + 1, Б. Семёновская, д. 38
+
+            + 2, 1-я Дубровская, д. 16а
+
+            + 3, Павла Корчагина, д. 22
+
+            + 4, Автозаводская, д. 16
+
+            + 5, Лефортовский вал, д. 26
+
+            + 6, Прянишникова, д. 2А
+
+            + 7, Садово-Спасская, д. 6
+
+            + 8, Михалковская, д. 7
+
+          required: true
+          type: "array"
+          items:
+            type: "integer"
+            enum:
+              [1, 2, 3, 4, 5, 6, 7, 8]
+        - name: "work_address_room"
+          required: true
+          in: "formData"
+          type: "string"
+          description: "Номер аудитории"
+        - name: "request_title"
+          in: "formData"
+          description: >
+            Тема заявки:
+
+            + 1, "Получение нового компьютерного оборудования
+
+            + 2, "Подключение компьютера, МФУ, телефона, WiFi
+
+            + 3, "Обслуживание принтеров, МФУ
+
+            + 4, "Вопрос по СЭД Directum и 1С
+
+            + 5, "Вопрос по Личному кабинету
+
+            + 6, "Прочее ИТ-обслуживание
+
+            + 7, "Справка с места работы
+
+            + 8, "Справка на визу
+
+            + 9, "Справка о стаже работы
+
+            10, "Справка о количестве неиспользованных дней отпуска
+
+            11, "Копия трудовой книжки
+
+            12, "Копии документов из личного дела
+
+            13, "Справка о работе на условиях внешнего совместительства для внесения стажа в трудовую книжку
+
+            14, "Справка по форме 2-НДФЛ
+
+            15, "Справка о выплате (не выплате) единовременного пособия на рождение ребенка
+
+            16, "Справка об отпуске по уходу за ребенком до 1,5 и 3 лет
+
+            17, "Справка о ежемесячных выплатах сотрудника, находящегося в отпуске по уходу за ребенком (декрет)
+
+          required: true
+          type: "array"
+          items:
+            type: "integer"
+            enum:
+              [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17]
+        - name: "request_text"
+          in: "formData"
+          description: "Текст заявки"
+          type: "string"
+        - name: "docs"
+          in: "formData"
+          description: "Присоединить файл (при необходимости)"
+          type: "file"
+          nullable: true
+      responses:
+        "201":
+          description: "Текст справки создан"
+        "400":
+          description: "Bad Request"
+  /teacher/help_lk/:
+    post:
+      tags:
+        - "teacher"
+      summary: "Вопрос по Личному кабинету"
+      description: "Вопрос по Личному кабинету"
+      consumes:
+        - multipart/form-data
+      produces:
+        - "application/json"
+      parameters:
+        - name: "fio"
+          in: "formData"
+          description: "ФИО"
+          required: true
+          type: "string"
+        - name: "structural_unit"
+          in: "formData"
+          description: "Структурное подразделение"
+          required: true
+          type: "string"
+        - name: "position"
+          in: "formData"
+          description: "Должность"
+          required: true
+          type: "string"
+        - name: "email"
+          in: "formData"
+          description: "Адрес электронной почты"
+          required: true
+          type: string
+          format: email
+        - name: "work_phone"
+          in: "formData"
+          description: "Рабочий телефон"
+          type: "string"
+        - name: "mobile_phone"
+          in: "formData"
+          description: "Мобильный телефон"
+          required: true
+          type: "string"
+        - name: "work_address_corpus"
+          in: "formData"
+          description: >
+            Площадка:
+
+            + 1, Б. Семёновская, д. 38
+
+            + 2, 1-я Дубровская, д. 16а
+
+            + 3, Павла Корчагина, д. 22
+
+            + 4, Автозаводская, д. 16
+
+            + 5, Лефортовский вал, д. 26
+
+            + 6, Прянишникова, д. 2А
+
+            + 7, Садово-Спасская, д. 6
+
+            + 8, Михалковская, д. 7
+
+          required: true
+          type: "array"
+          items:
+            type: "integer"
+            enum:
+              [1, 2, 3, 4, 5, 6, 7, 8]
+        - name: "work_address_room"
+          required: true
+          in: "formData"
+          type: "string"
+          description: "Номер аудитории"
+        - name: "request_title"
+          in: "formData"
+          description: >
+            Тема заявки:
+
+            + 1, "Получение нового компьютерного оборудования
+
+            + 2, "Подключение компьютера, МФУ, телефона, WiFi
+
+            + 3, "Обслуживание принтеров, МФУ
+
+            + 4, "Вопрос по СЭД Directum и 1С
+
+            + 5, "Вопрос по Личному кабинету
+
+            + 6, "Прочее ИТ-обслуживание
+
+            + 7, "Справка с места работы
+
+            + 8, "Справка на визу
+
+            + 9, "Справка о стаже работы
+
+            10, "Справка о количестве неиспользованных дней отпуска
+
+            11, "Копия трудовой книжки
+
+            12, "Копии документов из личного дела
+
+            13, "Справка о работе на условиях внешнего совместительства для внесения стажа в трудовую книжку
+
+            14, "Справка по форме 2-НДФЛ
+
+            15, "Справка о выплате (не выплате) единовременного пособия на рождение ребенка
+
+            16, "Справка об отпуске по уходу за ребенком до 1,5 и 3 лет
+
+            17, "Справка о ежемесячных выплатах сотрудника, находящегося в отпуске по уходу за ребенком (декрет)
+
+          required: true
+          type: "array"
+          items:
+            type: "integer"
+            enum:
+              [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17]
+        - name: "request_text"
+          in: "formData"
+          description: "Текст заявки"
+          type: "string"
+        - name: "docs"
+          in: "formData"
+          description: "Присоединить файл (при необходимости)"
+          type: "file"
+          nullable: true
+      responses:
+        "201":
+          description: "Текст справки создан"
+        "400":
+          description: "Bad Request"
+  /teacher/other_it/:
+    post:
+      tags:
+        - "teacher"
+      summary: "Прочее ИТ-обслуживание"
+      description: "Прочее ИТ-обслуживание"
+      consumes:
+        - multipart/form-data
+      produces:
+        - "application/json"
+      parameters:
+        - name: "fio"
+          in: "formData"
+          description: "ФИО"
+          required: true
+          type: "string"
+        - name: "structural_unit"
+          in: "formData"
+          description: "Структурное подразделение"
+          required: true
+          type: "string"
+        - name: "position"
+          in: "formData"
+          description: "Должность"
+          required: true
+          type: "string"
+        - name: "email"
+          in: "formData"
+          description: "Адрес электронной почты"
+          required: true
+          type: string
+          format: email
+        - name: "work_phone"
+          in: "formData"
+          description: "Рабочий телефон"
+          type: "string"
+        - name: "mobile_phone"
+          in: "formData"
+          description: "Мобильный телефон"
+          required: true
+          type: "string"
+        - name: "work_address_corpus"
+          in: "formData"
+          description: >
+            Площадка:
+
+            + 1, Б. Семёновская, д. 38
+
+            + 2, 1-я Дубровская, д. 16а
+
+            + 3, Павла Корчагина, д. 22
+
+            + 4, Автозаводская, д. 16
+
+            + 5, Лефортовский вал, д. 26
+
+            + 6, Прянишникова, д. 2А
+
+            + 7, Садово-Спасская, д. 6
+
+            + 8, Михалковская, д. 7
+
+          required: true
+          type: "array"
+          items:
+            type: "integer"
+            enum:
+              [1, 2, 3, 4, 5, 6, 7, 8]
+        - name: "work_address_room"
+          required: true
+          in: "formData"
+          type: "string"
+          description: "Номер аудитории"
+        - name: "request_title"
+          in: "formData"
+          description: >
+            Тема заявки:
+
+            + 1, "Получение нового компьютерного оборудования
+
+            + 2, "Подключение компьютера, МФУ, телефона, WiFi
+
+            + 3, "Обслуживание принтеров, МФУ
+
+            + 4, "Вопрос по СЭД Directum и 1С
+
+            + 5, "Вопрос по Личному кабинету
+
+            + 6, "Прочее ИТ-обслуживание
+
+            + 7, "Справка с места работы
+
+            + 8, "Справка на визу
+
+            + 9, "Справка о стаже работы
+
+            10, "Справка о количестве неиспользованных дней отпуска
+
+            11, "Копия трудовой книжки
+
+            12, "Копии документов из личного дела
+
+            13, "Справка о работе на условиях внешнего совместительства для внесения стажа в трудовую книжку
+
+            14, "Справка по форме 2-НДФЛ
+
+            15, "Справка о выплате (не выплате) единовременного пособия на рождение ребенка
+
+            16, "Справка об отпуске по уходу за ребенком до 1,5 и 3 лет
+
+            17, "Справка о ежемесячных выплатах сотрудника, находящегося в отпуске по уходу за ребенком (декрет)
+
+          required: true
+          type: "array"
+          items:
+            type: "integer"
+            enum:
+              [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17]
+        - name: "request_text"
+          in: "formData"
+          description: "Текст заявки"
+          type: "string"
+        - name: "docs"
+          in: "formData"
+          description: "Присоединить файл (при необходимости)"
+          type: "file"
+          nullable: true
+      responses:
+        "201":
+          description: "Текст справки создан"
+        "400":
+          description: "Bad Request"
+  /teacher/work_request/:
+    post:
+      tags:
+        - "teacher"
+      summary: "Справка с места работы"
+      description: "Справка с места работы"
+      consumes:
+        - multipart/form-data
+      produces:
+        - "application/json"
+      parameters:
+        - name: "fio"
+          in: "formData"
+          description: "ФИО"
+          required: true
+          type: "string"
+        - name: "structural_unit"
+          in: "formData"
+          description: "Структурное подразделение"
+          required: true
+          type: "string"
+        - name: "position"
+          in: "formData"
+          description: "Должность"
+          required: true
+          type: "string"
+        - name: "email"
+          in: "formData"
+          description: "Адрес электронной почты"
+          required: true
+          type: string
+          format: email
+        - name: "work_phone"
+          in: "formData"
+          description: "Рабочий телефон"
+          type: "string"
+        - name: "mobile_phone"
+          in: "formData"
+          description: "Мобильный телефон"
+          required: true
+          type: "string"
+        - name: "work_address_corpus"
+          in: "formData"
+          description: >
+            Площадка:
+
+            + 1, Б. Семёновская, д. 38
+
+            + 2, 1-я Дубровская, д. 16а
+
+            + 3, Павла Корчагина, д. 22
+
+            + 4, Автозаводская, д. 16
+
+            + 5, Лефортовский вал, д. 26
+
+            + 6, Прянишникова, д. 2А
+
+            + 7, Садово-Спасская, д. 6
+
+            + 8, Михалковская, д. 7
+
+          required: true
+          type: "array"
+          items:
+            type: "integer"
+            enum:
+              [1, 2, 3, 4, 5, 6, 7, 8]
+        - name: "work_address_room"
+          required: true
+          in: "formData"
+          type: "string"
+          description: "Номер аудитории"
+        - name: "request_title"
+          in: "formData"
+          description: >
+            Тема заявки:
+
+            + 1, "Получение нового компьютерного оборудования
+
+            + 2, "Подключение компьютера, МФУ, телефона, WiFi
+
+            + 3, "Обслуживание принтеров, МФУ
+
+            + 4, "Вопрос по СЭД Directum и 1С
+
+            + 5, "Вопрос по Личному кабинету
+
+            + 6, "Прочее ИТ-обслуживание
+
+            + 7, "Справка с места работы
+
+            + 8, "Справка на визу
+
+            + 9, "Справка о стаже работы
+
+            10, "Справка о количестве неиспользованных дней отпуска
+
+            11, "Копия трудовой книжки
+
+            12, "Копии документов из личного дела
+
+            13, "Справка о работе на условиях внешнего совместительства для внесения стажа в трудовую книжку
+
+            14, "Справка по форме 2-НДФЛ
+
+            15, "Справка о выплате (не выплате) единовременного пособия на рождение ребенка
+
+            16, "Справка об отпуске по уходу за ребенком до 1,5 и 3 лет
+
+            17, "Справка о ежемесячных выплатах сотрудника, находящегося в отпуске по уходу за ребенком (декрет)
+
+          required: true
+          type: "array"
+          items:
+            type: "integer"
+            enum:
+              [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17]
+        - name: "request_text"
+          in: "formData"
+          description: "Текст заявки"
+          type: "string"
+        - name: "docs"
+          in: "formData"
+          description: "Присоединить файл (при необходимости)"
+          type: "file"
+          nullable: true
+        - name: "way_to_get"
+          in: "formData"
+          description: >
+            Способ получения:
+
+            1, на электронную почту
+
+            2, получить в МФЦ/отделе
+
+          required: true
+          type: "array"
+          items:
+            type: "integer"
+            enum:
+              [1, 2]
+        - name: "place_to_get"
+          in: "formData"
+          description: >
+            Площадка:
+
+            1, МФЦ Большая Семёновская, д. 38, аудитория В107
+
+            2, МФЦ Прянишникова, д. 2А, аудитория 1311
+
+            3, МФЦ Павла Корчагина, д. 22, аудитория 213
+
+            4, МФЦ Автозаводская, д. 16, аудитория 2315
+
+            5, Отдел кадров
+
+            6, Бухгалтерия
+
+          required: true
+          type: "array"
+          items:
+            type: "integer"
+            enum:
+              [1, 2, 3, 4, 5, 6]
+      responses:
+        "201":
+          description: "Текст справки создан"
+        "400":
+          description: "Bad Request"
+  /teacher/work_visa/:
+    post:
+      tags:
+        - "teacher"
+      summary: "Справка на визу"
+      description: "Справка на визу"
+      consumes:
+        - multipart/form-data
+      produces:
+        - "application/json"
+      parameters:
+        - name: "fio"
+          in: "formData"
+          description: "ФИО"
+          required: true
+          type: "string"
+        - name: "structural_unit"
+          in: "formData"
+          description: "Структурное подразделение"
+          required: true
+          type: "string"
+        - name: "position"
+          in: "formData"
+          description: "Должность"
+          required: true
+          type: "string"
+        - name: "email"
+          in: "formData"
+          description: "Адрес электронной почты"
+          required: true
+          type: string
+          format: email
+        - name: "work_phone"
+          in: "formData"
+          description: "Рабочий телефон"
+          type: "string"
+        - name: "mobile_phone"
+          in: "formData"
+          description: "Мобильный телефон"
+          required: true
+          type: "string"
+        - name: "work_address_corpus"
+          in: "formData"
+          description: >
+            Площадка:
+
+            + 1, Б. Семёновская, д. 38
+
+            + 2, 1-я Дубровская, д. 16а
+
+            + 3, Павла Корчагина, д. 22
+
+            + 4, Автозаводская, д. 16
+
+            + 5, Лефортовский вал, д. 26
+
+            + 6, Прянишникова, д. 2А
+
+            + 7, Садово-Спасская, д. 6
+
+            + 8, Михалковская, д. 7
+
+          required: true
+          type: "array"
+          items:
+            type: "integer"
+            enum:
+              [1, 2, 3, 4, 5, 6, 7, 8]
+        - name: "work_address_room"
+          required: true
+          in: "formData"
+          type: "string"
+          description: "Номер аудитории"
+        - name: "request_title"
+          in: "formData"
+          description: >
+            Тема заявки:
+
+            + 1, "Получение нового компьютерного оборудования
+
+            + 2, "Подключение компьютера, МФУ, телефона, WiFi
+
+            + 3, "Обслуживание принтеров, МФУ
+
+            + 4, "Вопрос по СЭД Directum и 1С
+
+            + 5, "Вопрос по Личному кабинету
+
+            + 6, "Прочее ИТ-обслуживание
+
+            + 7, "Справка с места работы
+
+            + 8, "Справка на визу
+
+            + 9, "Справка о стаже работы
+
+            10, "Справка о количестве неиспользованных дней отпуска
+
+            11, "Копия трудовой книжки
+
+            12, "Копии документов из личного дела
+
+            13, "Справка о работе на условиях внешнего совместительства для внесения стажа в трудовую книжку
+
+            14, "Справка по форме 2-НДФЛ
+
+            15, "Справка о выплате (не выплате) единовременного пособия на рождение ребенка
+
+            16, "Справка об отпуске по уходу за ребенком до 1,5 и 3 лет
+
+            17, "Справка о ежемесячных выплатах сотрудника, находящегося в отпуске по уходу за ребенком (декрет)
+
+          required: true
+          type: "array"
+          items:
+            type: "integer"
+            enum:
+              [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17]
+        - name: "request_text"
+          in: "formData"
+          description: "Текст заявки"
+          type: "string"
+        - name: "docs"
+          in: "formData"
+          description: "Присоединить файл (при необходимости)"
+          type: "file"
+          nullable: true
+        - name: "way_to_get"
+          in: "formData"
+          description: >
+            Способ получения:
+
+            1, на электронную почту
+
+            2, получить в МФЦ/отделе
+
+          required: true
+          type: "array"
+          items:
+            type: "integer"
+            enum:
+              [1, 2]
+        - name: "place_to_get"
+          in: "formData"
+          description: >
+            Площадка:
+
+            1, МФЦ Большая Семёновская, д. 38, аудитория В107
+
+            2, МФЦ Прянишникова, д. 2А, аудитория 1311
+
+            3, МФЦ Павла Корчагина, д. 22, аудитория 213
+
+            4, МФЦ Автозаводская, д. 16, аудитория 2315
+
+            5, Отдел кадров
+
+            6, Бухгалтерия
+
+          required: true
+          type: "array"
+          items:
+            type: "integer"
+            enum:
+              [1, 2, 3, 4, 5, 6]
+      responses:
+        "201":
+          description: "Текст справки создан"
+        "400":
+          description: "Bad Request"
+  /teacher/work_expirience/:
+    post:
+      tags:
+        - "teacher"
+      summary: "Справка о стаже работы"
+      description: "Справка о стаже работы"
+      consumes:
+        - multipart/form-data
+      produces:
+        - "application/json"
+      parameters:
+        - name: "fio"
+          in: "formData"
+          description: "ФИО"
+          required: true
+          type: "string"
+        - name: "structural_unit"
+          in: "formData"
+          description: "Структурное подразделение"
+          required: true
+          type: "string"
+        - name: "position"
+          in: "formData"
+          description: "Должность"
+          required: true
+          type: "string"
+        - name: "email"
+          in: "formData"
+          description: "Адрес электронной почты"
+          required: true
+          type: string
+          format: email
+        - name: "work_phone"
+          in: "formData"
+          description: "Рабочий телефон"
+          type: "string"
+        - name: "mobile_phone"
+          in: "formData"
+          description: "Мобильный телефон"
+          required: true
+          type: "string"
+        - name: "work_address_corpus"
+          in: "formData"
+          description: >
+            Площадка:
+
+            + 1, Б. Семёновская, д. 38
+
+            + 2, 1-я Дубровская, д. 16а
+
+            + 3, Павла Корчагина, д. 22
+
+            + 4, Автозаводская, д. 16
+
+            + 5, Лефортовский вал, д. 26
+
+            + 6, Прянишникова, д. 2А
+
+            + 7, Садово-Спасская, д. 6
+
+            + 8, Михалковская, д. 7
+
+          required: true
+          type: "array"
+          items:
+            type: "integer"
+            enum:
+              [1, 2, 3, 4, 5, 6, 7, 8]
+        - name: "work_address_room"
+          required: true
+          in: "formData"
+          type: "string"
+          description: "Номер аудитории"
+        - name: "request_title"
+          in: "formData"
+          description: >
+            Тема заявки:
+
+            + 1, "Получение нового компьютерного оборудования
+
+            + 2, "Подключение компьютера, МФУ, телефона, WiFi
+
+            + 3, "Обслуживание принтеров, МФУ
+
+            + 4, "Вопрос по СЭД Directum и 1С
+
+            + 5, "Вопрос по Личному кабинету
+
+            + 6, "Прочее ИТ-обслуживание
+
+            + 7, "Справка с места работы
+
+            + 8, "Справка на визу
+
+            + 9, "Справка о стаже работы
+
+            10, "Справка о количестве неиспользованных дней отпуска
+
+            11, "Копия трудовой книжки
+
+            12, "Копии документов из личного дела
+
+            13, "Справка о работе на условиях внешнего совместительства для внесения стажа в трудовую книжку
+
+            14, "Справка по форме 2-НДФЛ
+
+            15, "Справка о выплате (не выплате) единовременного пособия на рождение ребенка
+
+            16, "Справка об отпуске по уходу за ребенком до 1,5 и 3 лет
+
+            17, "Справка о ежемесячных выплатах сотрудника, находящегося в отпуске по уходу за ребенком (декрет)
+
+          required: true
+          type: "array"
+          items:
+            type: "integer"
+            enum:
+              [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17]
+        - name: "request_text"
+          in: "formData"
+          description: "Текст заявки"
+          type: "string"
+        - name: "docs"
+          in: "formData"
+          description: "Присоединить файл (при необходимости)"
+          type: "file"
+          nullable: true
+        - name: "way_to_get"
+          in: "formData"
+          description: >
+            Способ получения:
+
+            1, на электронную почту
+
+            2, получить в МФЦ/отделе
+
+          required: true
+          type: "array"
+          items:
+            type: "integer"
+            enum:
+              [1, 2]
+        - name: "place_to_get"
+          in: "formData"
+          description: >
+            Площадка:
+
+            1, МФЦ Большая Семёновская, д. 38, аудитория В107
+
+            2, МФЦ Прянишникова, д. 2А, аудитория 1311
+
+            3, МФЦ Павла Корчагина, д. 22, аудитория 213
+
+            4, МФЦ Автозаводская, д. 16, аудитория 2315
+
+            5, Отдел кадров
+
+            6, Бухгалтерия
+
+          required: true
+          type: "array"
+          items:
+            type: "integer"
+            enum:
+              [1, 2, 3, 4, 5, 6]
+      responses:
+        "201":
+          description: "Текст справки создан"
+        "400":
+          description: "Bad Request"
+  /teacher/work_holiday/:
+    post:
+      tags:
+        - "teacher"
+      summary: "Справка о количестве неиспользованных дней отпуска"
+      description: "Справка о количестве неиспользованных дней отпуска"
+      consumes:
+        - multipart/form-data
+      produces:
+        - "application/json"
+      parameters:
+        - name: "fio"
+          in: "formData"
+          description: "ФИО"
+          required: true
+          type: "string"
+        - name: "structural_unit"
+          in: "formData"
+          description: "Структурное подразделение"
+          required: true
+          type: "string"
+        - name: "position"
+          in: "formData"
+          description: "Должность"
+          required: true
+          type: "string"
+        - name: "email"
+          in: "formData"
+          description: "Адрес электронной почты"
+          required: true
+          type: string
+          format: email
+        - name: "work_phone"
+          in: "formData"
+          description: "Рабочий телефон"
+          type: "string"
+        - name: "mobile_phone"
+          in: "formData"
+          description: "Мобильный телефон"
+          required: true
+          type: "string"
+        - name: "work_address_corpus"
+          in: "formData"
+          description: >
+            Площадка:
+
+            + 1, Б. Семёновская, д. 38
+
+            + 2, 1-я Дубровская, д. 16а
+
+            + 3, Павла Корчагина, д. 22
+
+            + 4, Автозаводская, д. 16
+
+            + 5, Лефортовский вал, д. 26
+
+            + 6, Прянишникова, д. 2А
+
+            + 7, Садово-Спасская, д. 6
+
+            + 8, Михалковская, д. 7
+
+          required: true
+          type: "array"
+          items:
+            type: "integer"
+            enum:
+              [1, 2, 3, 4, 5, 6, 7, 8]
+        - name: "work_address_room"
+          required: true
+          in: "formData"
+          type: "string"
+          description: "Номер аудитории"
+        - name: "request_title"
+          in: "formData"
+          description: >
+            Тема заявки:
+
+            + 1, "Получение нового компьютерного оборудования
+
+            + 2, "Подключение компьютера, МФУ, телефона, WiFi
+
+            + 3, "Обслуживание принтеров, МФУ
+
+            + 4, "Вопрос по СЭД Directum и 1С
+
+            + 5, "Вопрос по Личному кабинету
+
+            + 6, "Прочее ИТ-обслуживание
+
+            + 7, "Справка с места работы
+
+            + 8, "Справка на визу
+
+            + 9, "Справка о стаже работы
+
+            10, "Справка о количестве неиспользованных дней отпуска
+
+            11, "Копия трудовой книжки
+
+            12, "Копии документов из личного дела
+
+            13, "Справка о работе на условиях внешнего совместительства для внесения стажа в трудовую книжку
+
+            14, "Справка по форме 2-НДФЛ
+
+            15, "Справка о выплате (не выплате) единовременного пособия на рождение ребенка
+
+            16, "Справка об отпуске по уходу за ребенком до 1,5 и 3 лет
+
+            17, "Справка о ежемесячных выплатах сотрудника, находящегося в отпуске по уходу за ребенком (декрет)
+
+          required: true
+          type: "array"
+          items:
+            type: "integer"
+            enum:
+              [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17]
+        - name: "request_text"
+          in: "formData"
+          description: "Текст заявки"
+          type: "string"
+        - name: "docs"
+          in: "formData"
+          description: "Присоединить файл (при необходимости)"
+          type: "file"
+          nullable: true
+        - name: "way_to_get"
+          in: "formData"
+          description: >
+            Способ получения:
+
+            1, на электронную почту
+
+            2, получить в МФЦ/отделе
+
+          required: true
+          type: "array"
+          items:
+            type: "integer"
+            enum:
+              [1, 2]
+        - name: "place_to_get"
+          in: "formData"
+          description: >
+            Площадка:
+
+            1, МФЦ Большая Семёновская, д. 38, аудитория В107
+
+            2, МФЦ Прянишникова, д. 2А, аудитория 1311
+
+            3, МФЦ Павла Корчагина, д. 22, аудитория 213
+
+            4, МФЦ Автозаводская, д. 16, аудитория 2315
+
+            5, Отдел кадров
+
+            6, Бухгалтерия
+
+          required: true
+          type: "array"
+          items:
+            type: "integer"
+            enum:
+              [1, 2, 3, 4, 5, 6]
+      responses:
+        "201":
+          description: "Текст справки создан"
+        "400":
+          description: "Bad Request"
+  /teacher/work_tk/:
+    post:
+      tags:
+        - "teacher"
+      summary: "Копия трудовой книжки"
+      description: "Копия трудовой книжки"
+      consumes:
+        - multipart/form-data
+      produces:
+        - "application/json"
+      parameters:
+        - name: "fio"
+          in: "formData"
+          description: "ФИО"
+          required: true
+          type: "string"
+        - name: "structural_unit"
+          in: "formData"
+          description: "Структурное подразделение"
+          required: true
+          type: "string"
+        - name: "position"
+          in: "formData"
+          description: "Должность"
+          required: true
+          type: "string"
+        - name: "email"
+          in: "formData"
+          description: "Адрес электронной почты"
+          required: true
+          type: string
+          format: email
+        - name: "work_phone"
+          in: "formData"
+          description: "Рабочий телефон"
+          type: "string"
+        - name: "mobile_phone"
+          in: "formData"
+          description: "Мобильный телефон"
+          required: true
+          type: "string"
+        - name: "work_address_corpus"
+          in: "formData"
+          description: >
+            Площадка:
+
+            + 1, Б. Семёновская, д. 38
+
+            + 2, 1-я Дубровская, д. 16а
+
+            + 3, Павла Корчагина, д. 22
+
+            + 4, Автозаводская, д. 16
+
+            + 5, Лефортовский вал, д. 26
+
+            + 6, Прянишникова, д. 2А
+
+            + 7, Садово-Спасская, д. 6
+
+            + 8, Михалковская, д. 7
+
+          required: true
+          type: "array"
+          items:
+            type: "integer"
+            enum:
+              [1, 2, 3, 4, 5, 6, 7, 8]
+        - name: "work_address_room"
+          required: true
+          in: "formData"
+          type: "string"
+          description: "Номер аудитории"
+        - name: "request_title"
+          in: "formData"
+          description: >
+            Тема заявки:
+
+            + 1, "Получение нового компьютерного оборудования
+
+            + 2, "Подключение компьютера, МФУ, телефона, WiFi
+
+            + 3, "Обслуживание принтеров, МФУ
+
+            + 4, "Вопрос по СЭД Directum и 1С
+
+            + 5, "Вопрос по Личному кабинету
+
+            + 6, "Прочее ИТ-обслуживание
+
+            + 7, "Справка с места работы
+
+            + 8, "Справка на визу
+
+            + 9, "Справка о стаже работы
+
+            10, "Справка о количестве неиспользованных дней отпуска
+
+            11, "Копия трудовой книжки
+
+            12, "Копии документов из личного дела
+
+            13, "Справка о работе на условиях внешнего совместительства для внесения стажа в трудовую книжку
+
+            14, "Справка по форме 2-НДФЛ
+
+            15, "Справка о выплате (не выплате) единовременного пособия на рождение ребенка
+
+            16, "Справка об отпуске по уходу за ребенком до 1,5 и 3 лет
+
+            17, "Справка о ежемесячных выплатах сотрудника, находящегося в отпуске по уходу за ребенком (декрет)
+
+          required: true
+          type: "array"
+          items:
+            type: "integer"
+            enum:
+              [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17]
+        - name: "request_text"
+          in: "formData"
+          description: "Текст заявки"
+          type: "string"
+        - name: "docs"
+          in: "formData"
+          description: "Присоединить файл (при необходимости)"
+          type: "file"
+          nullable: true
+        - name: "way_to_get"
+          in: "formData"
+          description: >
+            Способ получения:
+
+            1, на электронную почту
+
+            2, получить в МФЦ/отделе
+
+          required: true
+          type: "array"
+          items:
+            type: "integer"
+            enum:
+              [1, 2]
+        - name: "place_to_get"
+          in: "formData"
+          description: >
+            Площадка:
+
+            1, МФЦ Большая Семёновская, д. 38, аудитория В107
+
+            2, МФЦ Прянишникова, д. 2А, аудитория 1311
+
+            3, МФЦ Павла Корчагина, д. 22, аудитория 213
+
+            4, МФЦ Автозаводская, д. 16, аудитория 2315
+
+            5, Отдел кадров
+
+            6, Бухгалтерия
+
+          required: true
+          type: "array"
+          items:
+            type: "integer"
+            enum:
+              [1, 2, 3, 4, 5, 6]
+      responses:
+        "201":
+          description: "Текст справки создан"
+        "400":
+          description: "Bad Request"
+  /teacher/work_copy/:
+    post:
+      tags:
+        - "teacher"
+      summary: "Копии документов из личного дела"
+      description: "Копии документов из личного дела"
+      consumes:
+        - multipart/form-data
+      produces:
+        - "application/json"
+      parameters:
+        - name: "fio"
+          in: "formData"
+          description: "ФИО"
+          required: true
+          type: "string"
+        - name: "structural_unit"
+          in: "formData"
+          description: "Структурное подразделение"
+          required: true
+          type: "string"
+        - name: "position"
+          in: "formData"
+          description: "Должность"
+          required: true
+          type: "string"
+        - name: "email"
+          in: "formData"
+          description: "Адрес электронной почты"
+          required: true
+          type: string
+          format: email
+        - name: "work_phone"
+          in: "formData"
+          description: "Рабочий телефон"
+          type: "string"
+        - name: "mobile_phone"
+          in: "formData"
+          description: "Мобильный телефон"
+          required: true
+          type: "string"
+        - name: "work_address_corpus"
+          in: "formData"
+          description: >
+            Площадка:
+
+            + 1, Б. Семёновская, д. 38
+
+            + 2, 1-я Дубровская, д. 16а
+
+            + 3, Павла Корчагина, д. 22
+
+            + 4, Автозаводская, д. 16
+
+            + 5, Лефортовский вал, д. 26
+
+            + 6, Прянишникова, д. 2А
+
+            + 7, Садово-Спасская, д. 6
+
+            + 8, Михалковская, д. 7
+
+          required: true
+          type: "array"
+          items:
+            type: "integer"
+            enum:
+              [1, 2, 3, 4, 5, 6, 7, 8]
+        - name: "work_address_room"
+          required: true
+          in: "formData"
+          type: "string"
+          description: "Номер аудитории"
+        - name: "request_title"
+          in: "formData"
+          description: >
+            Тема заявки:
+
+            + 1, "Получение нового компьютерного оборудования
+
+            + 2, "Подключение компьютера, МФУ, телефона, WiFi
+
+            + 3, "Обслуживание принтеров, МФУ
+
+            + 4, "Вопрос по СЭД Directum и 1С
+
+            + 5, "Вопрос по Личному кабинету
+
+            + 6, "Прочее ИТ-обслуживание
+
+            + 7, "Справка с места работы
+
+            + 8, "Справка на визу
+
+            + 9, "Справка о стаже работы
+
+            10, "Справка о количестве неиспользованных дней отпуска
+
+            11, "Копия трудовой книжки
+
+            12, "Копии документов из личного дела
+
+            13, "Справка о работе на условиях внешнего совместительства для внесения стажа в трудовую книжку
+
+            14, "Справка по форме 2-НДФЛ
+
+            15, "Справка о выплате (не выплате) единовременного пособия на рождение ребенка
+
+            16, "Справка об отпуске по уходу за ребенком до 1,5 и 3 лет
+
+            17, "Справка о ежемесячных выплатах сотрудника, находящегося в отпуске по уходу за ребенком (декрет)
+
+          required: true
+          type: "array"
+          items:
+            type: "integer"
+            enum:
+              [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17]
+        - name: "request_text"
+          in: "formData"
+          description: "Текст заявки"
+          type: "string"
+        - name: "docs"
+          in: "formData"
+          description: "Присоединить файл (при необходимости)"
+          type: "file"
+          nullable: true
+        - name: "way_to_get"
+          in: "formData"
+          description: >
+            Способ получения:
+
+            1, на электронную почту
+
+            2, получить в МФЦ/отделе
+
+          required: true
+          type: "array"
+          items:
+            type: "integer"
+            enum:
+              [1, 2]
+        - name: "place_to_get"
+          in: "formData"
+          description: >
+            Площадка:
+
+            1, МФЦ Большая Семёновская, д. 38, аудитория В107
+
+            2, МФЦ Прянишникова, д. 2А, аудитория 1311
+
+            3, МФЦ Павла Корчагина, д. 22, аудитория 213
+
+            4, МФЦ Автозаводская, д. 16, аудитория 2315
+
+            5, Отдел кадров
+
+            6, Бухгалтерия
+
+          required: true
+          type: "array"
+          items:
+            type: "integer"
+            enum:
+              [1, 2, 3, 4, 5, 6]
+      responses:
+        "201":
+          description: "Текст справки создан"
+        "400":
+          description: "Bad Request"
+  /teacher/work_add_exp/:
+    post:
+      tags:
+        - "teacher"
+      summary: "Справка о работе на условиях внешнего совместительства для внесения стажа в трудовую книжку"
+      description: "Справка о работе на условиях внешнего совместительства для внесения стажа в трудовую книжку"
+      consumes:
+        - multipart/form-data
+      produces:
+        - "application/json"
+      parameters:
+        - name: "fio"
+          in: "formData"
+          description: "ФИО"
+          required: true
+          type: "string"
+        - name: "structural_unit"
+          in: "formData"
+          description: "Структурное подразделение"
+          required: true
+          type: "string"
+        - name: "position"
+          in: "formData"
+          description: "Должность"
+          required: true
+          type: "string"
+        - name: "email"
+          in: "formData"
+          description: "Адрес электронной почты"
+          required: true
+          type: string
+          format: email
+        - name: "work_phone"
+          in: "formData"
+          description: "Рабочий телефон"
+          type: "string"
+        - name: "mobile_phone"
+          in: "formData"
+          description: "Мобильный телефон"
+          required: true
+          type: "string"
+        - name: "work_address_corpus"
+          in: "formData"
+          description: >
+            Площадка:
+
+            + 1, Б. Семёновская, д. 38
+
+            + 2, 1-я Дубровская, д. 16а
+
+            + 3, Павла Корчагина, д. 22
+
+            + 4, Автозаводская, д. 16
+
+            + 5, Лефортовский вал, д. 26
+
+            + 6, Прянишникова, д. 2А
+
+            + 7, Садово-Спасская, д. 6
+
+            + 8, Михалковская, д. 7
+
+          required: true
+          type: "array"
+          items:
+            type: "integer"
+            enum:
+              [1, 2, 3, 4, 5, 6, 7, 8]
+        - name: "work_address_room"
+          required: true
+          in: "formData"
+          type: "string"
+          description: "Номер аудитории"
+        - name: "request_title"
+          in: "formData"
+          description: >
+            Тема заявки:
+
+            + 1, "Получение нового компьютерного оборудования
+
+            + 2, "Подключение компьютера, МФУ, телефона, WiFi
+
+            + 3, "Обслуживание принтеров, МФУ
+
+            + 4, "Вопрос по СЭД Directum и 1С
+
+            + 5, "Вопрос по Личному кабинету
+
+            + 6, "Прочее ИТ-обслуживание
+
+            + 7, "Справка с места работы
+
+            + 8, "Справка на визу
+
+            + 9, "Справка о стаже работы
+
+            10, "Справка о количестве неиспользованных дней отпуска
+
+            11, "Копия трудовой книжки
+
+            12, "Копии документов из личного дела
+
+            13, "Справка о работе на условиях внешнего совместительства для внесения стажа в трудовую книжку
+
+            14, "Справка по форме 2-НДФЛ
+
+            15, "Справка о выплате (не выплате) единовременного пособия на рождение ребенка
+
+            16, "Справка об отпуске по уходу за ребенком до 1,5 и 3 лет
+
+            17, "Справка о ежемесячных выплатах сотрудника, находящегося в отпуске по уходу за ребенком (декрет)
+
+          required: true
+          type: "array"
+          items:
+            type: "integer"
+            enum:
+              [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17]
+        - name: "request_text"
+          in: "formData"
+          description: "Текст заявки"
+          type: "string"
+        - name: "docs"
+          in: "formData"
+          description: "Присоединить файл (при необходимости)"
+          type: "file"
+          nullable: true
+        - name: "way_to_get"
+          in: "formData"
+          description: >
+            Способ получения:
+
+            1, на электронную почту
+
+            2, получить в МФЦ/отделе
+
+          required: true
+          type: "array"
+          items:
+            type: "integer"
+            enum:
+              [1, 2]
+        - name: "place_to_get"
+          in: "formData"
+          description: >
+            Площадка:
+
+            1, МФЦ Большая Семёновская, д. 38, аудитория В107
+
+            2, МФЦ Прянишникова, д. 2А, аудитория 1311
+
+            3, МФЦ Павла Корчагина, д. 22, аудитория 213
+
+            4, МФЦ Автозаводская, д. 16, аудитория 2315
+
+            5, Отдел кадров
+
+            6, Бухгалтерия
+
+          required: true
+          type: "array"
+          items:
+            type: "integer"
+            enum:
+              [1, 2, 3, 4, 5, 6]
+      responses:
+        "201":
+          description: "Текст справки создан"
+        "400":
+          description: "Bad Request"
+  /teacher/2-ndfl/:
+    post:
+      tags:
+        - "teacher"
+      summary: "Справка по форме 2-НДФЛ"
+      description: "Справка по форме 2-НДФЛ"
+      consumes:
+        - multipart/form-data
+      produces:
+        - "application/json"
+      parameters:
+        - name: "fio"
+          in: "formData"
+          description: "ФИО"
+          required: true
+          type: "string"
+        - name: "structural_unit"
+          in: "formData"
+          description: "Структурное подразделение"
+          required: true
+          type: "string"
+        - name: "position"
+          in: "formData"
+          description: "Должность"
+          required: true
+          type: "string"
+        - name: "email"
+          in: "formData"
+          description: "Адрес электронной почты"
+          required: true
+          type: string
+          format: email
+        - name: "work_phone"
+          in: "formData"
+          description: "Рабочий телефон"
+          type: "string"
+        - name: "mobile_phone"
+          in: "formData"
+          description: "Мобильный телефон"
+          required: true
+          type: "string"
+        - name: "work_address_corpus"
+          in: "formData"
+          description: >
+            Площадка:
+
+            + 1, Б. Семёновская, д. 38
+
+            + 2, 1-я Дубровская, д. 16а
+
+            + 3, Павла Корчагина, д. 22
+
+            + 4, Автозаводская, д. 16
+
+            + 5, Лефортовский вал, д. 26
+
+            + 6, Прянишникова, д. 2А
+
+            + 7, Садово-Спасская, д. 6
+
+            + 8, Михалковская, д. 7
+
+          required: true
+          type: "array"
+          items:
+            type: "integer"
+            enum:
+              [1, 2, 3, 4, 5, 6, 7, 8]
+        - name: "work_address_room"
+          required: true
+          in: "formData"
+          type: "string"
+          description: "Номер аудитории"
+        - name: "request_title"
+          in: "formData"
+          description: >
+            Тема заявки:
+
+            + 1, "Получение нового компьютерного оборудования
+
+            + 2, "Подключение компьютера, МФУ, телефона, WiFi
+
+            + 3, "Обслуживание принтеров, МФУ
+
+            + 4, "Вопрос по СЭД Directum и 1С
+
+            + 5, "Вопрос по Личному кабинету
+
+            + 6, "Прочее ИТ-обслуживание
+
+            + 7, "Справка с места работы
+
+            + 8, "Справка на визу
+
+            + 9, "Справка о стаже работы
+
+            10, "Справка о количестве неиспользованных дней отпуска
+
+            11, "Копия трудовой книжки
+
+            12, "Копии документов из личного дела
+
+            13, "Справка о работе на условиях внешнего совместительства для внесения стажа в трудовую книжку
+
+            14, "Справка по форме 2-НДФЛ
+
+            15, "Справка о выплате (не выплате) единовременного пособия на рождение ребенка
+
+            16, "Справка об отпуске по уходу за ребенком до 1,5 и 3 лет
+
+            17, "Справка о ежемесячных выплатах сотрудника, находящегося в отпуске по уходу за ребенком (декрет)
+
+          required: true
+          type: "array"
+          items:
+            type: "integer"
+            enum:
+              [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17]
+        - name: "request_period"
+          in: "formData"
+          description: "Период справки"
+          type: "integer"
+          minimum: 2010
+          maximum: 2020
+        - name: "copies_number"
+          in: "formData"
+          description: "Количество экземляров"
+          type: "integer"
+          minimum: 1
+          maximum: 10
+        - name: "child_fio"
+          in: "formData"
+          description: "ФИО ребенка"
+          type: "string"
+        - name: "child_date"
+          in: "formData"
+          description: "Дата рождения ребенка"
+          type: "string"
+        - name: "request_text"
+          in: "formData"
+          description: "Текст заявки"
+          type: "string"
+        - name: "docs"
+          in: "formData"
+          description: "Присоединить файл (при необходимости)"
+          type: "file"
+          nullable: true
+        - name: "way_to_get"
+          in: "formData"
+          description: >
+            Способ получения:
+
+            1, на электронную почту
+
+            2, получить в МФЦ/отделе
+
+          required: true
+          type: "array"
+          items:
+            type: "integer"
+            enum:
+              [1, 2]
+        - name: "place_to_get"
+          in: "formData"
+          description: >
+            Площадка:
+
+            1, МФЦ Большая Семёновская, д. 38, аудитория В107
+
+            2, МФЦ Прянишникова, д. 2А, аудитория 1311
+
+            3, МФЦ Павла Корчагина, д. 22, аудитория 213
+
+            4, МФЦ Автозаводская, д. 16, аудитория 2315
+
+            5, Отдел кадров
+
+            6, Бухгалтерия
+
+          required: true
+          type: "array"
+          items:
+            type: "integer"
+            enum:
+              [1, 2, 3, 4, 5, 6]
+      responses:
+        "201":
+          description: "Текст справки создан"
+        "400":
+          description: "Bad Request"
+  /teacher/payment_child/:
+    post:
+      tags:
+        - "teacher"
+      summary: "Справка о выплате (не выплате) единовременного пособия на рождение ребенка"
+      description: "Справка о выплате (не выплате) единовременного пособия на рождение ребенка"
+      consumes:
+        - multipart/form-data
+      produces:
+        - "application/json"
+      parameters:
+        - name: "fio"
+          in: "formData"
+          description: "ФИО"
+          required: true
+          type: "string"
+        - name: "structural_unit"
+          in: "formData"
+          description: "Структурное подразделение"
+          required: true
+          type: "string"
+        - name: "position"
+          in: "formData"
+          description: "Должность"
+          required: true
+          type: "string"
+        - name: "email"
+          in: "formData"
+          description: "Адрес электронной почты"
+          required: true
+          type: string
+          format: email
+        - name: "work_phone"
+          in: "formData"
+          description: "Рабочий телефон"
+          type: "string"
+        - name: "mobile_phone"
+          in: "formData"
+          description: "Мобильный телефон"
+          required: true
+          type: "string"
+        - name: "work_address_corpus"
+          in: "formData"
+          description: >
+            Площадка:
+
+            + 1, Б. Семёновская, д. 38
+
+            + 2, 1-я Дубровская, д. 16а
+
+            + 3, Павла Корчагина, д. 22
+
+            + 4, Автозаводская, д. 16
+
+            + 5, Лефортовский вал, д. 26
+
+            + 6, Прянишникова, д. 2А
+
+            + 7, Садово-Спасская, д. 6
+
+            + 8, Михалковская, д. 7
+
+          required: true
+          type: "array"
+          items:
+            type: "integer"
+            enum:
+              [1, 2, 3, 4, 5, 6, 7, 8]
+        - name: "work_address_room"
+          required: true
+          in: "formData"
+          type: "string"
+          description: "Номер аудитории"
+        - name: "request_title"
+          in: "formData"
+          description: >
+            Тема заявки:
+
+            + 1, "Получение нового компьютерного оборудования
+
+            + 2, "Подключение компьютера, МФУ, телефона, WiFi
+
+            + 3, "Обслуживание принтеров, МФУ
+
+            + 4, "Вопрос по СЭД Directum и 1С
+
+            + 5, "Вопрос по Личному кабинету
+
+            + 6, "Прочее ИТ-обслуживание
+
+            + 7, "Справка с места работы
+
+            + 8, "Справка на визу
+
+            + 9, "Справка о стаже работы
+
+            10, "Справка о количестве неиспользованных дней отпуска
+
+            11, "Копия трудовой книжки
+
+            12, "Копии документов из личного дела
+
+            13, "Справка о работе на условиях внешнего совместительства для внесения стажа в трудовую книжку
+
+            14, "Справка по форме 2-НДФЛ
+
+            15, "Справка о выплате (не выплате) единовременного пособия на рождение ребенка
+
+            16, "Справка об отпуске по уходу за ребенком до 1,5 и 3 лет
+
+            17, "Справка о ежемесячных выплатах сотрудника, находящегося в отпуске по уходу за ребенком (декрет)
+
+          required: true
+          type: "array"
+          items:
+            type: "integer"
+            enum:
+              [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17]
+        - name: "request_period"
+          in: "formData"
+          description: "Период справки"
+          type: "integer"
+          minimum: 2010
+          maximum: 2020
+        - name: "copies_number"
+          in: "formData"
+          description: "Количество экземляров"
+          type: "integer"
+          minimum: 1
+          maximum: 10
+        - name: "child_fio"
+          in: "formData"
+          description: "ФИО ребенка"
+          type: "string"
+        - name: "child_date"
+          in: "formData"
+          description: "Дата рождения ребенка"
+          type: "string"
+        - name: "request_text"
+          in: "formData"
+          description: "Текст заявки"
+          type: "string"
+        - name: "docs"
+          in: "formData"
+          description: "Присоединить файл (при необходимости)"
+          type: "file"
+          nullable: true
+        - name: "way_to_get"
+          in: "formData"
+          description: >
+            Способ получения:
+
+            1, на электронную почту
+
+            2, получить в МФЦ/отделе
+
+          required: true
+          type: "array"
+          items:
+            type: "integer"
+            enum:
+              [1, 2]
+        - name: "place_to_get"
+          in: "formData"
+          description: >
+            Площадка:
+
+            1, МФЦ Большая Семёновская, д. 38, аудитория В107
+
+            2, МФЦ Прянишникова, д. 2А, аудитория 1311
+
+            3, МФЦ Павла Корчагина, д. 22, аудитория 213
+
+            4, МФЦ Автозаводская, д. 16, аудитория 2315
+
+            5, Отдел кадров
+
+            6, Бухгалтерия
+
+          required: true
+          type: "array"
+          items:
+            type: "integer"
+            enum:
+              [1, 2, 3, 4, 5, 6]
+      responses:
+        "201":
+          description: "Текст справки создан"
+        "400":
+          description: "Bad Request"
+  /teacher/work_child/:
+    post:
+      tags:
+        - "teacher"
+      summary: "Справка об отпуске по уходу за ребенком до 1,5 и 3 лет"
+      description: "Справка об отпуске по уходу за ребенком до 1,5 и 3 лет"
+      consumes:
+        - multipart/form-data
+      produces:
+        - "application/json"
+      parameters:
+        - name: "fio"
+          in: "formData"
+          description: "ФИО"
+          required: true
+          type: "string"
+        - name: "structural_unit"
+          in: "formData"
+          description: "Структурное подразделение"
+          required: true
+          type: "string"
+        - name: "position"
+          in: "formData"
+          description: "Должность"
+          required: true
+          type: "string"
+        - name: "email"
+          in: "formData"
+          description: "Адрес электронной почты"
+          required: true
+          type: string
+          format: email
+        - name: "work_phone"
+          in: "formData"
+          description: "Рабочий телефон"
+          type: "string"
+        - name: "mobile_phone"
+          in: "formData"
+          description: "Мобильный телефон"
+          required: true
+          type: "string"
+        - name: "work_address_corpus"
+          in: "formData"
+          description: >
+            Площадка:
+
+            + 1, Б. Семёновская, д. 38
+
+            + 2, 1-я Дубровская, д. 16а
+
+            + 3, Павла Корчагина, д. 22
+
+            + 4, Автозаводская, д. 16
+
+            + 5, Лефортовский вал, д. 26
+
+            + 6, Прянишникова, д. 2А
+
+            + 7, Садово-Спасская, д. 6
+
+            + 8, Михалковская, д. 7
+
+          required: true
+          type: "array"
+          items:
+            type: "integer"
+            enum:
+              [1, 2, 3, 4, 5, 6, 7, 8]
+        - name: "work_address_room"
+          required: true
+          in: "formData"
+          type: "string"
+          description: "Номер аудитории"
+        - name: "request_title"
+          in: "formData"
+          description: >
+            Тема заявки:
+
+            + 1, "Получение нового компьютерного оборудования
+
+            + 2, "Подключение компьютера, МФУ, телефона, WiFi
+
+            + 3, "Обслуживание принтеров, МФУ
+
+            + 4, "Вопрос по СЭД Directum и 1С
+
+            + 5, "Вопрос по Личному кабинету
+
+            + 6, "Прочее ИТ-обслуживание
+
+            + 7, "Справка с места работы
+
+            + 8, "Справка на визу
+
+            + 9, "Справка о стаже работы
+
+            10, "Справка о количестве неиспользованных дней отпуска
+
+            11, "Копия трудовой книжки
+
+            12, "Копии документов из личного дела
+
+            13, "Справка о работе на условиях внешнего совместительства для внесения стажа в трудовую книжку
+
+            14, "Справка по форме 2-НДФЛ
+
+            15, "Справка о выплате (не выплате) единовременного пособия на рождение ребенка
+
+            16, "Справка об отпуске по уходу за ребенком до 1,5 и 3 лет
+
+            17, "Справка о ежемесячных выплатах сотрудника, находящегося в отпуске по уходу за ребенком (декрет)
+
+          required: true
+          type: "array"
+          items:
+            type: "integer"
+            enum:
+              [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17]
+        - name: "request_period"
+          in: "formData"
+          description: "Период справки"
+          type: "integer"
+          minimum: 2010
+          maximum: 2020
+        - name: "copies_number"
+          in: "formData"
+          description: "Количество экземляров"
+          type: "integer"
+          minimum: 1
+          maximum: 10
+        - name: "child_fio"
+          in: "formData"
+          description: "ФИО ребенка"
+          type: "string"
+        - name: "child_date"
+          in: "formData"
+          description: "Дата рождения ребенка"
+          type: "string"
+        - name: "request_text"
+          in: "formData"
+          description: "Текст заявки"
+          type: "string"
+        - name: "docs"
+          in: "formData"
+          description: "Присоединить файл (при необходимости)"
+          type: "file"
+          nullable: true
+        - name: "way_to_get"
+          in: "formData"
+          description: >
+            Способ получения:
+
+            1, на электронную почту
+
+            2, получить в МФЦ/отделе
+
+          required: true
+          type: "array"
+          items:
+            type: "integer"
+            enum:
+              [1, 2]
+        - name: "place_to_get"
+          in: "formData"
+          description: >
+            Площадка:
+
+            1, МФЦ Большая Семёновская, д. 38, аудитория В107
+
+            2, МФЦ Прянишникова, д. 2А, аудитория 1311
+
+            3, МФЦ Павла Корчагина, д. 22, аудитория 213
+
+            4, МФЦ Автозаводская, д. 16, аудитория 2315
+
+            5, Отдел кадров
+
+            6, Бухгалтерия
+
+          required: true
+          type: "array"
+          items:
+            type: "integer"
+            enum:
+              [1, 2, 3, 4, 5, 6]
+      responses:
+        "201":
+          description: "Текст справки создан"
+        "400":
+          description: "Bad Request"
+  /teacher/decree/:
+    post:
+      tags:
+        - "teacher"
+      summary: "Справка о ежемесячных выплатах сотрудника, находящегося в отпуске по уходу за ребенком (декрет)"
+      description: "Справка о ежемесячных выплатах сотрудника, находящегося в отпуске по уходу за ребенком (декрет)"
+      consumes:
+        - multipart/form-data
+      produces:
+        - "application/json"
+      parameters:
+        - name: "fio"
+          in: "formData"
+          description: "ФИО"
+          required: true
+          type: "string"
+        - name: "structural_unit"
+          in: "formData"
+          description: "Структурное подразделение"
+          required: true
+          type: "string"
+        - name: "position"
+          in: "formData"
+          description: "Должность"
+          required: true
+          type: "string"
+        - name: "email"
+          in: "formData"
+          description: "Адрес электронной почты"
+          required: true
+          type: string
+          format: email
+        - name: "work_phone"
+          in: "formData"
+          description: "Рабочий телефон"
+          type: "string"
+        - name: "mobile_phone"
+          in: "formData"
+          description: "Мобильный телефон"
+          required: true
+          type: "string"
+        - name: "work_address_corpus"
+          in: "formData"
+          description: >
+            Площадка:
+
+            + 1, Б. Семёновская, д. 38
+
+            + 2, 1-я Дубровская, д. 16а
+
+            + 3, Павла Корчагина, д. 22
+
+            + 4, Автозаводская, д. 16
+
+            + 5, Лефортовский вал, д. 26
+
+            + 6, Прянишникова, д. 2А
+
+            + 7, Садово-Спасская, д. 6
+
+            + 8, Михалковская, д. 7
+
+          required: true
+          type: "array"
+          items:
+            type: "integer"
+            enum:
+              [1, 2, 3, 4, 5, 6, 7, 8]
+        - name: "work_address_room"
+          required: true
+          in: "formData"
+          type: "string"
+          description: "Номер аудитории"
+        - name: "request_title"
+          in: "formData"
+          description: >
+            Тема заявки:
+
+            + 1, "Получение нового компьютерного оборудования
+
+            + 2, "Подключение компьютера, МФУ, телефона, WiFi
+
+            + 3, "Обслуживание принтеров, МФУ
+
+            + 4, "Вопрос по СЭД Directum и 1С
+
+            + 5, "Вопрос по Личному кабинету
+
+            + 6, "Прочее ИТ-обслуживание
+
+            + 7, "Справка с места работы
+
+            + 8, "Справка на визу
+
+            + 9, "Справка о стаже работы
+
+            10, "Справка о количестве неиспользованных дней отпуска
+
+            11, "Копия трудовой книжки
+
+            12, "Копии документов из личного дела
+
+            13, "Справка о работе на условиях внешнего совместительства для внесения стажа в трудовую книжку
+
+            14, "Справка по форме 2-НДФЛ
+
+            15, "Справка о выплате (не выплате) единовременного пособия на рождение ребенка
+
+            16, "Справка об отпуске по уходу за ребенком до 1,5 и 3 лет
+
+            17, "Справка о ежемесячных выплатах сотрудника, находящегося в отпуске по уходу за ребенком (декрет)
+
+          required: true
+          type: "array"
+          items:
+            type: "integer"
+            enum:
+              [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17]
+        - name: "request_period"
+          in: "formData"
+          description: "Период справки"
+          type: "integer"
+          minimum: 2010
+          maximum: 2020
+        - name: "copies_number"
+          in: "formData"
+          description: "Количество экземляров"
+          type: "integer"
+          minimum: 1
+          maximum: 10
+        - name: "child_fio"
+          in: "formData"
+          description: "ФИО ребенка"
+          type: "string"
+        - name: "child_date"
+          in: "formData"
+          description: "Дата рождения ребенка"
+          type: "string"
+        - name: "request_text"
+          in: "formData"
+          description: "Текст заявки"
+          type: "string"
+        - name: "docs"
+          in: "formData"
+          description: "Присоединить файл (при необходимости)"
+          type: "file"
+          nullable: true
+        - name: "way_to_get"
+          in: "formData"
+          description: >
+            Способ получения:
+
+            1, на электронную почту
+
+            2, получить в МФЦ/отделе
+
+          required: true
+          type: "array"
+          items:
+            type: "integer"
+            enum:
+              [1, 2]
+        - name: "place_to_get"
+          in: "formData"
+          description: >
+            Площадка:
+
+            1, МФЦ Большая Семёновская, д. 38, аудитория В107
+
+            2, МФЦ Прянишникова, д. 2А, аудитория 1311
+
+            3, МФЦ Павла Корчагина, д. 22, аудитория 213
+
+            4, МФЦ Автозаводская, д. 16, аудитория 2315
+
+            5, Отдел кадров
+
+            6, Бухгалтерия
+
+          required: true
+          type: "array"
+          items:
+            type: "integer"
+            enum:
+              [1, 2, 3, 4, 5, 6]
+      responses:
+        "201":
+          description: "Текст справки создан"
+        "400":
+          description: "Bad Request"
 definitions:
-  Request:
+  RequestStudent:
     type: "object"
     properties:
       id:
@@ -887,7 +3641,7 @@ definitions:
         example: "SC02032011137"
         description: "Регистрационный номер запроса"
       request_title:
-        $ref: "#/definitions/RequestType"
+        $ref: "#/definitions/RequestStudentType"
         description: "Название справки"
       request_text:
         type: "string"
@@ -916,8 +3670,6 @@ definitions:
         type: "string"
         description: "Примечание от сотрудников"
         example: "Отклонено. Для справки в ПФ необходимо указывать номер и дату приказа о зачислении"
-    xml:
-      name: "Request"
   Address:
     type: "object"
     description: "Структурное подразделение, адрес"
@@ -929,7 +3681,7 @@ definitions:
       name:
         type: "string"
         example: "Отделение «На Большой Семеновской» центра по работе со студентами Ул. Большая Семеновская, 38; ауд. В-107. Тел. (495) 223-05-23 (доб. 1375, 1215, 1105) ; crs-bs@mospolytech.ru"
-  RequestType:
+  RequestStudentType:
     type: "object"
     description: "Тип справки"
     required:
@@ -940,3 +3692,46 @@ definitions:
       name:
         type: "string"
         example: "Справка о прослушанных дисциплинах за период обучения (справка об обучении)"
+  RequestTeacher:
+    type: "object"
+    properties:
+      id:
+        type: "integer"
+      datetime:
+        type: "string"
+        format: "date-time"
+        description: "Дата и время подачи справки"
+      reg_number:
+        type: "string"
+        example: "SC02032011137"
+        description: "Регистрационный номер запроса"
+      request_title:
+        $ref: "#/definitions/RequestStudentType"
+        description: "Название справки"
+      request_text:
+        type: "string"
+        description: "Текст справки. Генерируется на сервере по заполненной форме"
+        example: "Зачислена(а) по приказу от 19.08.2019 № 111-а. Дана для предоставления в Пенсионный фонд"
+      status:
+        type: "integer"
+        description: >
+          Статус рассмотрения заявки. Возможные значения:
+
+          + 1 — На рассмотрении
+
+          + 2 — Отклонена
+
+          + 3 — Готово
+        enum:
+          [1, 2, 3]
+      date_for_status:
+        type: "string"
+        format: "date-time"
+        description: "Дата и время изменения статуса справки"
+      address:
+        $ref: "#/definitions/Address"
+        description: "Адрес выдачи справки"
+      remark:
+        type: "string"
+        description: "Примечание от сотрудников"
+        example: "Отклонено. Для справки в ПФ необходимо указывать номер и дату приказа о зачислении"
