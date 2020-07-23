@@ -15,22 +15,21 @@ import os
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
-
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/3.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = 'c-u=0mxq5#z_q_-0_j3g0ufi66&d9$3coorkb7qp*g8tcg6_$v'
 
+SECRET_JWT = 'SECRET'
+
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
 ALLOWED_HOSTS = ['mpu-statements-service.herokuapp.com', '127.0.0.1']
 
-
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 MEDIA_URL = '/media/'  # URL для медии в шаблонах
-
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/3.0/howto/static-files/
@@ -63,6 +62,7 @@ INSTALLED_APPS = [
     'requests_teachers',
     # Сторонние приложения
     'rest_framework',
+    'rest_framework.authtoken',
 ]
 
 MIDDLEWARE = [
@@ -97,7 +97,6 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'mpu_statements_service.wsgi.application'
 
-
 # Database
 # https://docs.djangoproject.com/en/3.0/ref/settings/#databases
 
@@ -107,7 +106,6 @@ DATABASES = {
         'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
     }
 }
-
 
 # Password validation
 # https://docs.djangoproject.com/en/3.0/ref/settings/#auth-password-validators
@@ -127,7 +125,6 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-
 # Internationalization
 # https://docs.djangoproject.com/en/3.0/topics/i18n/
 
@@ -141,12 +138,17 @@ USE_L10N = True
 
 USE_TZ = False  # For DRF
 
-
 REST_FRAMEWORK = {
-    "DATE_INPUT_FORMATS": ["%d.%m.%Y"],
-    # 'DEFAULT_AUTHENTICATION_CLASSES': (
-    #         'rest_framework.authentication.BasicAuthentication',
-    #     )
+    'DATE_INPUT_FORMATS': ["%d.%m.%Y"],
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        # 'rest_framework.authentication.BasicAuthentication',
+        # 'rest_framework_simplejwt.authentication.JWTAuthentication',
+        # 'rest_framework.authentication.TokenAuthentication',
+        'requests_students.authentication.ExampleAuthentication',  # custom authentication class
+    ),
+    'DEFAULT_PERMISSION_CLASSES': (
+        'rest_framework.permissions.IsAuthenticated',
+    ),
 }
 
 # Simplified static file serving.
@@ -155,5 +157,6 @@ STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 # Heroku: Update database configuration from $DATABASE_URL.
 import dj_database_url
+
 db_from_env = dj_database_url.config(conn_max_age=500)
 DATABASES['default'].update(db_from_env)

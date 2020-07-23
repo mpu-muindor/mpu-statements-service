@@ -4,7 +4,7 @@ from requests_students.models import *
 
 class RequestStudentAdmin(admin.ModelAdmin):
     model = RequestStudent
-    list_display = ("datetime", "reg_number", "request_title", "request_text",
+    list_display = ("user_uuid", "contacts", "datetime", "reg_number", "request_title", "request_text",
                     "status", "date_for_status", "address", "remark")
     list_filter = ("status", "request_title", )
 

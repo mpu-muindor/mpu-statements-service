@@ -66,6 +66,8 @@ class RequestTeacher(models.Model):
         (7, "Садово-Спасская, д. 6"),
         (8, "Михалковская, д. 7"),
     )
+    user_uuid = models.UUIDField(verbose_name='UUID пользователя')
+    contacts = models.CharField(max_length=1000, verbose_name='Контактные данные')
     request_title = models.SmallIntegerField(choices=REQUESTS, verbose_name="Тема")
     request_text = models.CharField(verbose_name="Текст заявки", max_length=5000)
     responsible_unit = models.SmallIntegerField(choices=UNITS, verbose_name="Ответственное подразделение")

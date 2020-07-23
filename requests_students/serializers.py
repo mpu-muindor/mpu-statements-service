@@ -22,7 +22,11 @@ def create_addresses():
         Address.objects.get_or_create(name=address)
 
 
-create_addresses()
+# TODO: good validation
+try:
+    create_addresses()
+except:
+    pass
 
 
 def get_addresses(filter_name=None):
@@ -97,6 +101,13 @@ class EdRequestSerializer(serializers.Serializer):
     user_comment = serializers.CharField(required=False, allow_null=True)
 
     def save(self, **kwargs):
+        # Retrieve user
+        user = self.context['user']
+
+        name = f'{user["first_name"]} {user["last_name"]} {user.get("middle_name", "")}'
+        group_id = (user.get('students')[0]).get('group_id')
+        contacts = f'{name}, {self.validated_data.get("phone", user["phone"])}, {self.validated_data.get("email", user["email"])}'
+
         # Request text formatting
         temp = 'моим письменным заявлением.' \
             if self.validated_data["radio1"] else f'отчислением из {self.validated_data["university_out"]} в ' \
@@ -104,7 +115,8 @@ class EdRequestSerializer(serializers.Serializer):
         text = f'Прошу выдать мне справку об обучении в связи с {temp} Предыдущий документ об образовании, ' + \
                f'выданный в {self.validated_data["previous_doc_year"]} году: ' \
                f'{dict(self.DOC_TYPE).get(self.validated_data["previous_doc"])}. ' + \
-               f'В {self.validated_data["university_in"]} зачислен(а) в {self.validated_data["year_in"]} году.'
+               f'В {self.validated_data["university_in"]} зачислен(а) в {self.validated_data["year_in"]} году. ' \
+               f'Учебная группа: {group_id}.'
         if self.validated_data.get("user_comment"):
             text += f' Комментарий: {self.validated_data["user_comment"]}'
 
@@ -114,6 +126,8 @@ class EdRequestSerializer(serializers.Serializer):
 
         # Create request
         RequestStudent.objects.create(
+            user_uuid=user['id'],
+            contacts=contacts,
             reg_number=f"ED{num}",
             request_title=obj,
             request_text=text,
@@ -133,6 +147,11 @@ class StatusRequestSerializer(serializers.Serializer):
     user_comment = serializers.CharField(required=False, allow_null=True)
 
     def save(self, **kwargs):
+        user = self.context['user']
+
+        name = f'{user["first_name"]} {user["last_name"]} {user.get("middle_name", "")}'
+        contacts = f'{name}, {self.validated_data.get("phone", user["phone"])}, {self.validated_data.get("email", user["email"])}'
+
         text = f'Дана для предоставления {self.validated_data["to_whom"]}.'
         if self.validated_data.get("user_comment"):
             text += f' Комментарий: {self.validated_data["user_comment"]}'
@@ -141,6 +160,8 @@ class StatusRequestSerializer(serializers.Serializer):
         obj, num = get_request_type_and_num(request_name)
 
         RequestStudent.objects.create(
+            user_uuid=user['id'],
+            contacts=contacts,
             reg_number=f"SR{num}",
             request_title=obj,
             request_text=text,
@@ -162,6 +183,11 @@ class SobesRequestSerializer(serializers.Serializer):
     user_comment = serializers.CharField(required=False, allow_null=True)
 
     def save(self, **kwargs):
+        user = self.context['user']
+
+        name = f'{user["first_name"]} {user["last_name"]} {user.get("middle_name", "")}'
+        contacts = f'{name}, {self.validated_data.get("phone", user["phone"])}, {self.validated_data.get("email", user["email"])}'
+
         text = f'Зачислена(а) по приказу от {self.validated_data["order_date"]} {self.validated_data["order_num"]}. ' + \
                f'Дана для предоставления {self.validated_data["to_whom"]}.'
         if self.validated_data.get("user_comment"):
@@ -171,6 +197,8 @@ class SobesRequestSerializer(serializers.Serializer):
         obj, num = get_request_type_and_num(request_name)
 
         RequestStudent.objects.create(
+            user_uuid=user['id'],
+            contacts=contacts,
             reg_number=f"SC{num}",
             request_title=obj,
             request_text=text,
@@ -190,6 +218,11 @@ class CallRequestSerializer(serializers.Serializer):
     user_comment = serializers.CharField(required=False, allow_null=True)
 
     def save(self, **kwargs):
+        user = self.context['user']
+
+        name = f'{user["first_name"]} {user["last_name"]} {user.get("middle_name", "")}'
+        contacts = f'{name}, {self.validated_data.get("phone", user["phone"])}, {self.validated_data.get("email", user["email"])}'
+
         date_from = self.validated_data["date_from"].strftime("%d.%m.%Y")
         date_to = self.validated_data["date_to"].strftime("%d.%m.%Y")
         day_delta = (self.validated_data["date_to"] - self.validated_data["date_from"]).days
@@ -201,6 +234,8 @@ class CallRequestSerializer(serializers.Serializer):
         obj, num = get_request_type_and_num(request_name)
 
         RequestStudent.objects.create(
+            user_uuid=user['id'],
+            contacts=contacts,
             reg_number=f"SPV{num}",
             request_title=obj,
             request_text=text,
@@ -219,6 +254,11 @@ class PersDataRequestSerializer(serializers.Serializer):
     docs = serializers.FileField()
 
     def save(self, **kwargs):
+        user = self.context['user']
+
+        name = f'{user["first_name"]} {user["last_name"]} {user.get("middle_name", "")}'
+        contacts = f'{name}, {self.validated_data.get("phone", user["phone"])}, {self.validated_data.get("email", user["email"])}'
+
         text = f'Прошу внести изменения в мои персональные данные и в дальнейшем именовать меня ' + \
                f'{self.validated_data["first_last_name"]} в связи с {self.validated_data["reason"]}'
 
@@ -226,6 +266,8 @@ class PersDataRequestSerializer(serializers.Serializer):
         obj, num = get_request_type_and_num(request_name)
 
         RequestStudent.objects.create(
+            user_uuid=user['id'],
+            contacts=contacts,
             reg_number=f"PD{num}",
             request_title=obj,
             request_text=text,
@@ -242,12 +284,19 @@ class PassRestoreRequestSerializer(serializers.Serializer):
     reason = serializers.CharField(max_length=500)
 
     def save(self, **kwargs):
+        user = self.context['user']
+
+        name = f'{user["first_name"]} {user["last_name"]} {user.get("middle_name", "")}'
+        contacts = f'{name}, {self.validated_data.get("phone", user["phone"])}, {self.validated_data.get("email", user["email"])}'
+
         text = f'Прошу восстановить мой магнитный пропуск в связи с {self.validated_data["reason"]}'
 
         request_name = "Запрос на восстановление магнитного пропуска"
         obj, num = get_request_type_and_num(request_name)
 
         RequestStudent.objects.create(
+            user_uuid=user['id'],
+            contacts=contacts,
             reg_number=f"RP{num}",
             request_title=obj,
             request_text=text,
@@ -282,17 +331,28 @@ class PracticeLetterRequestSerializer(serializers.Serializer):
     organization_head = serializers.CharField(max_length=300)
 
     def save(self, **kwargs):
-        # TODO: add user!!!
+        user = self.context['user']
+
+        name = f'{user["first_name"]} {user["last_name"]} {user.get("middle_name", "")}'
+        group_id = (user.get('students')[0]).get('group_id')
+        phone = self.validated_data.get("phone", user["phone"])
+        email = self.validated_data.get("email", user["email"])
+        contacts = f'{name}, {phone}, {email}'
+
         date_from = self.validated_data["date_from"].strftime("%d.%m.%Y")
         date_to = self.validated_data["date_to"].strftime("%d.%m.%Y")
-        text = f'ФИО студента,\nГруппа:,\nПериод: с {date_from} до {date_to},\n' + \
+        # TODO: не хватает специальности и нормальной группы
+        text = f'{name},\nГруппа: {group_id},\nПериод: с {date_from} до {date_to},\n' + \
                f'Место практики: {self.validated_data["organization_name"]},\n' + \
-               f'Руководитель: {self.validated_data["organization_head"]}\n,Специальность:,\nТел:,\nE-mail:'
+               f'Руководитель: {self.validated_data["organization_head"]}\n,Специальность:,\n' \
+               f'Тел: {phone},\nE-mail: {email}'
 
         request_name = "Заказать сопроводительное письмо на практику"
         obj, num = get_request_type_and_num(request_name)
 
         RequestStudent.objects.create(
+            user_uuid=user['id'],
+            contacts=contacts,
             reg_number=f"PRL{num}",
             request_title=obj,
             request_text=text,
@@ -355,10 +415,17 @@ class PrDonateRequestSerializer(serializers.Serializer):
                f'Номер членского профсоюзного билета: {self.validated_data["prof_ticket"]}. ' + \
                f'Адрес по месту регистрации: {self.validated_data["user_address"]}.'
 
+        user = self.context['user']
+
+        name = f'{user["first_name"]} {user["last_name"]} {user.get("middle_name", "")}'
+        contacts = f'{name}, {self.validated_data.get("phone", user["phone"])}, {self.validated_data.get("email", user["email"])}'
+
         request_name = "Оформить дотацию Мэрии г. Москвы"
         obj, num = get_request_type_and_num(request_name)
 
         RequestStudent.objects.create(
+            user_uuid=user['id'],
+            contacts=contacts,
             reg_number=f"DN{num}",
             request_title=obj,
             request_text=text,
@@ -453,15 +520,24 @@ class MatHelpRequestSerializer(serializers.Serializer):
 
         temp_reasons = list(choises.get(key) for key in self.validated_data["reason"])
         reasons = ', а также '.join(temp_reasons)
-
         text += reasons + '.\n'
-        text += f'Подразделение: {self.validated_data["department"]}\nКурс: \nГруппа: \nОснова обучения: \nКатегория ' \
-                f'обучаещегося: \nКонтактный телефон: \n '
+
+        user = self.context['user']
+
+        name = f'{user["first_name"]} {user["last_name"]} {user.get("middle_name", "")}'
+        group_id = (user.get('students')[0]).get('group_id')
+        phone = self.validated_data.get("phone", user["phone"])
+        contacts = f'{name}, {phone}, {self.validated_data.get("email", user["email"])}'
+
+        text += f'Подразделение: {self.validated_data["department"]}\nКурс: 3\nГруппа: {group_id}\n' \
+                f'Основа обучения: Бюджетная\nКатегория обучаещегося: студент\nКонтактный телефон: {phone}\n '
 
         request_name = "Заявка на материальную помощь"
         obj, num = get_request_type_and_num(request_name)
 
         RequestStudent.objects.create(
+            user_uuid=user['id'],
+            contacts=contacts,
             reg_number=f"MR{num}",
             request_title=obj,
             request_text=text,
@@ -495,12 +571,19 @@ class SocStipRequestSerializer(serializers.Serializer):
     docs = serializers.FileField()
 
     def save(self, **kwargs):
+        user = self.context['user']
+
+        name = f'{user["first_name"]} {user["last_name"]} {user.get("middle_name", "")}'
+        contacts = f'{name}, {self.validated_data.get("phone", user["phone"])}, {self.validated_data.get("email", user["email"])}'
+
         text = f'Основание для получения социальнй стипендии: {dict(self.REASONS).get(self.validated_data["reason"])}.'
 
         request_name = "Оформить социальную стипендию"
         obj, num = get_request_type_and_num(request_name)
 
         RequestStudent.objects.create(
+            user_uuid=user['id'],
+            contacts=contacts,
             reg_number=f"PS{num}",
             request_title=obj,
             request_text=text,
@@ -550,9 +633,16 @@ class ArmyRequestSerializer(serializers.Serializer):
     user_temp_address = serializers.CharField(required=False, allow_null=True)
 
     def save(self, **kwargs):
-        # TODO: add user!!! (2)
-        text = f'ФИО\nФакультет: {dict(self.FACULTIES).get(self.validated_data["faculty"])}\nСпециальность:\nДР:\nТел:\n' \
-               f'Категория годности:{dict(self.CATEGORIES).get(self.validated_data["category"])}\n' \
+        user = self.context['user']
+
+        name = f'{user["first_name"]} {user["last_name"]} {user.get("middle_name", "")}'
+        phone = self.validated_data.get("phone", user["phone"])
+        birthday = user.get('birthday')
+        contacts = f'{name}, {phone}, {self.validated_data.get("email", user["email"])}'
+
+        text = f'{name}\nФакультет: {dict(self.FACULTIES).get(self.validated_data["faculty"])}\n' \
+               f'Специальность: 09.03.03 Прикладная информатика\nДР: {birthday}\nТел: {phone}\n' \
+               f'Категория годности: {dict(self.CATEGORIES).get(self.validated_data["category"])}\n' \
                f'Место жительства: {self.validated_data["user_address"]}\n' \
                f'Семейное положение: {dict(self.MARTIAL_STATUSES).get(self.validated_data["martial_status"])}\n'
 
@@ -567,6 +657,8 @@ class ArmyRequestSerializer(serializers.Serializer):
         obj, num = get_request_type_and_num(request_name)
 
         RequestStudent.objects.create(
+            user_uuid=user['id'],
+            contacts=contacts,
             reg_number=f"VK{num}",
             request_title=obj,
             request_text=text,

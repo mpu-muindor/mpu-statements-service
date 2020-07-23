@@ -25,7 +25,12 @@ class ISandComputersSerializer(serializers.Serializer):
     file = serializers.FileField(required=False, allow_null=True)
 
     def save(self, **kwargs):
-        text = f"Подразделение: {self.validated_data['structural_unit']}\nДолжность: \n," \
+        user = self.context['user']
+
+        name = f'{user["first_name"]} {user["last_name"]} {user.get("middle_name", "")}'
+        contacts = f'{name}, {self.validated_data.get("phone", user["phone"])}, {self.validated_data.get("email", user["email"])}'
+
+        text = f"Подразделение: {self.validated_data['structural_unit']}\nДолжность: Преподаватель\n," \
                f"Моб. телефон: {self.validated_data['mobile_phone']}\n" \
                f"Площадка: {dict(RequestTeacher.ADDRESSES).get(self.validated_data['work_address_corpus'])}\n" \
                f"Номер аудитории: {self.validated_data['work_address_room']}\n"
@@ -33,6 +38,8 @@ class ISandComputersSerializer(serializers.Serializer):
             text += f'Заявка:\n{self.validated_data["request_text"]}'
 
         RequestTeacher.objects.create(
+            user_uuid=user['id'],
+            contacts=contacts,
             request_title=self.validated_data['request_title'],
             request_text=text,
             responsible_unit=2,
@@ -176,6 +183,10 @@ class WorkPaymentsSerializer(serializers.Serializer):
         return data
 
     def save(self, **kwargs):
+        user = self.context['user']
+        name = f'{user["first_name"]} {user["last_name"]} {user.get("middle_name", "")}'
+        contacts = f'{name}, {user["phone"]}, {user["email"]}'
+
         text = f"Подразделение: {self.validated_data['structural_unit']}\nДолжность: \n," \
                f"Моб. телефон: {self.validated_data['mobile_phone']}\n" \
                f"Площадка: {dict(RequestTeacher.ADDRESSES).get(self.validated_data['work_address_corpus'])}\n" \

@@ -16,11 +16,17 @@ class ISSandComputerView(views.APIView):
     """
 
     def post(self, request, format=None):
-        serializer = ISandComputersSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        user = request.user.user
+        if user['user_type'] == 'professor':
+            serializer = ISandComputersSerializer(data=request.data, context={"user": user})
+            if serializer.is_valid():
+                serializer.save()
+                return Response(serializer.data, status=status.HTTP_201_CREATED)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        return Response(
+            {'message': 'Данный сервис недоступен для Вашей учетной записи.'},
+            status=status.HTTP_403_FORBIDDEN
+        )
 
 
 class WorkRequestsView(views.APIView):
@@ -37,11 +43,17 @@ class WorkRequestsView(views.APIView):
     """
 
     def post(self, request, format=None):
-        serializer = WorkRequestsSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        user = request.user.user
+        if user['user_type'] == 'professor':
+            serializer = WorkRequestsSerializer(data=request.data, context={"user": user})
+            if serializer.is_valid():
+                serializer.save()
+                return Response(serializer.data, status=status.HTTP_201_CREATED)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        return Response(
+            {'message': 'Данный сервис недоступен для Вашей учетной записи.'},
+            status=status.HTTP_403_FORBIDDEN
+        )
 
 
 class WorkPaymentsView(views.APIView):
@@ -52,11 +64,17 @@ class WorkPaymentsView(views.APIView):
     """
 
     def post(self, request, format=None):
-        serializer = WorkPaymentsSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        user = request.user.user
+        if user['user_type'] == 'professor':
+            serializer = WorkPaymentsSerializer(data=request.data, context={"user": user})
+            if serializer.is_valid():
+                serializer.save()
+                return Response(serializer.data, status=status.HTTP_201_CREATED)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        return Response(
+            {'message': 'Данный сервис недоступен для Вашей учетной записи.'},
+            status=status.HTTP_403_FORBIDDEN
+        )
 
 
 class RequestHistoryTeacherView(views.APIView):
@@ -65,6 +83,11 @@ class RequestHistoryTeacherView(views.APIView):
     """
 
     def get(self, request, format=None):
-        queryset = RequestTeacher.objects.all()
-        serializer = RequestHistoryTeacherSerializer(queryset, many=True)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        user = request.user.user
+        if user['user_type'] == 'professor':
+            queryset = RequestTeacher.objects.filter(user_uuid=user['id'])
+            serializer = RequestHistoryTeacherSerializer(queryset, many=True)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(
+            {'message': 'Данный сервис недоступен для Вашей учетной записи.'},
+            status=status.HTTP_403_FORBIDDEN)

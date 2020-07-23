@@ -10,11 +10,17 @@ class EdRequestView(views.APIView):
     """
 
     def post(self, request, format=None):
-        serializer = EdRequestSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        user = request.user.user
+        if user['user_type'] == 'student':
+            serializer = EdRequestSerializer(data=request.data, context={"user": user})
+            if serializer.is_valid():
+                serializer.save()
+                return Response(serializer.data, status=status.HTTP_201_CREATED)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        return Response(
+            {'message': 'Данный сервис недоступен для Вашей учетной записи.'},
+            status=status.HTTP_403_FORBIDDEN
+        )
 
 
 class StatusRequestView(views.APIView):
@@ -23,11 +29,17 @@ class StatusRequestView(views.APIView):
     """
 
     def post(self, request, format=None):
-        serializer = StatusRequestSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        user = request.user.user
+        if user['user_type'] == 'student':
+            serializer = StatusRequestSerializer(data=request.data, context={"user": user})
+            if serializer.is_valid():
+                serializer.save()
+                return Response(serializer.data, status=status.HTTP_201_CREATED)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        return Response(
+            {'message': 'Данный сервис недоступен для Вашей учетной записи.'},
+            status=status.HTTP_403_FORBIDDEN
+        )
 
 
 class SobesRequestView(views.APIView):
@@ -36,11 +48,17 @@ class SobesRequestView(views.APIView):
     """
 
     def post(self, request, format=None):
-        serializer = SobesRequestSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        user = request.user.user
+        if user['user_type'] == 'student':
+            serializer = SobesRequestSerializer(data=request.data, context={"user": user})
+            if serializer.is_valid():
+                serializer.save()
+                return Response(serializer.data, status=status.HTTP_201_CREATED)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        return Response(
+            {'message': 'Данный сервис недоступен для Вашей учетной записи.'},
+            status=status.HTTP_403_FORBIDDEN
+        )
 
 
 class CallRequestView(views.APIView):
@@ -49,24 +67,36 @@ class CallRequestView(views.APIView):
     """
 
     def post(self, request, format=None):
-        serializer = CallRequestSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        user = request.user.user
+        if user['user_type'] == 'student':
+            serializer = CallRequestSerializer(data=request.data, context={"user": user})
+            if serializer.is_valid():
+                serializer.save()
+                return Response(serializer.data, status=status.HTTP_201_CREATED)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        return Response(
+            {'message': 'Данный сервис недоступен для Вашей учетной записи.'},
+            status=status.HTTP_403_FORBIDDEN
+        )
 
 
 class PersDataRequestView(views.APIView):
     """
-    Справка в социальные учреждения (Пенсионный фонд, УСЗН и пр.)
+    Запрос на изменение персональных данных
     """
 
     def post(self, request, format=None):
-        serializer = PersDataRequestSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        user = request.user.user
+        if user['user_type'] == 'student':
+            serializer = PersDataRequestSerializer(data=request.data, context={"user": user})
+            if serializer.is_valid():
+                serializer.save()
+                return Response(serializer.data, status=status.HTTP_201_CREATED)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        return Response(
+            {'message': 'Данный сервис недоступен для Вашей учетной записи.'},
+            status=status.HTTP_403_FORBIDDEN
+        )
 
 
 class PassRestoreRequestView(views.APIView):
@@ -75,20 +105,34 @@ class PassRestoreRequestView(views.APIView):
     """
 
     def post(self, request, format=None):
-        serializer = PassRestoreRequestSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        user = request.user.user
+        if user['user_type'] == 'student':
+            serializer = PassRestoreRequestSerializer(data=request.data, context={"user": user})
+            if serializer.is_valid():
+                serializer.save()
+                return Response(serializer.data, status=status.HTTP_201_CREATED)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        return Response(
+            {'message': 'Данный сервис недоступен для Вашей учетной записи.'},
+            status=status.HTTP_403_FORBIDDEN
+        )
 
 
 class PracticeSelectRequestView(views.APIView):
     """
     Выбор места практики
     """
+
     def get(self, request, format=None):
-        text = "Данный вид практики в настоящее время недоступен"
-        return Response(text, status=status.HTTP_400_BAD_REQUEST)
+        user = request.user.user
+        if user['user_type'] == 'student':
+            return Response(
+                {'message': 'Данный вид практики в настоящее время недоступен'},
+                status=status.HTTP_200_OK)
+        return Response(
+            {'message': 'Данный сервис недоступен для Вашей учетной записи.'},
+            status=status.HTTP_403_FORBIDDEN
+        )
 
 
 class PracticeLetterRequestView(views.APIView):
@@ -97,29 +141,51 @@ class PracticeLetterRequestView(views.APIView):
     """
 
     def post(self, request, format=None):
-        serializer = PracticeLetterRequestSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        user = request.user.user
+        if user['user_type'] == 'student':
+            serializer = PracticeLetterRequestSerializer(data=request.data, context={"user": user})
+            if serializer.is_valid():
+                serializer.save()
+                return Response(serializer.data, status=status.HTTP_201_CREATED)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        return Response(
+            {'message': 'Данный сервис недоступен для Вашей учетной записи.'},
+            status=status.HTTP_403_FORBIDDEN
+        )
 
 
 class ExtraAgreementRequestView(views.APIView):
     """
     Заключение дополнительного соглашения к договору об обучении
     """
+
     def get(self, request, format=None):
-        text = "Данный вид услуги доступен только для студентов, обучающихся на платной договорной основе."
-        return Response(text, status=status.HTTP_400_BAD_REQUEST)
+        user = request.user.user
+        if user['user_type'] == 'student':
+            return Response(
+                {'message': 'Данный вид услуги доступен только для студентов, обучающихся на платной договорной основе.'},
+                status=status.HTTP_200_OK)
+        return Response(
+            {'message': 'Данный сервис недоступен для Вашей учетной записи.'},
+            status=status.HTTP_403_FORBIDDEN
+        )
 
 
 class SendPaymentEduRequestView(views.APIView):
     """
     Отправка квитанции об оплате за обучение, неустойку (пени)
     """
+
     def get(self, request, format=None):
-        text = "Данный вид услуги доступен только для студентов, обучающихся на платной договорной основе."
-        return Response(text, status=status.HTTP_400_BAD_REQUEST)
+        user = request.user.user
+        if user['user_type'] == 'student':
+            return Response(
+                {'message': 'Данный вид услуги доступен только для студентов, обучающихся на платной договорной основе.'},
+                status=status.HTTP_200_OK)
+        return Response(
+            {'message': 'Данный сервис недоступен для Вашей учетной записи.'},
+            status=status.HTTP_403_FORBIDDEN
+        )
 
 
 class PrDonateRequestView(views.APIView):
@@ -128,11 +194,17 @@ class PrDonateRequestView(views.APIView):
     """
 
     def post(self, request, format=None):
-        serializer = PrDonateRequestSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        user = request.user.user
+        if user['user_type'] == 'student':
+            serializer = PrDonateRequestSerializer(data=request.data, context={"user": user})
+            if serializer.is_valid():
+                serializer.save()
+                return Response(serializer.data, status=status.HTTP_201_CREATED)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        return Response(
+            {'message': 'Данный сервис недоступен для Вашей учетной записи.'},
+            status=status.HTTP_403_FORBIDDEN
+        )
 
 
 class MatHelpRequestView(views.APIView):
@@ -141,11 +213,17 @@ class MatHelpRequestView(views.APIView):
     """
 
     def post(self, request, format=None):
-        serializer = MatHelpRequestSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        user = request.user.user
+        if user['user_type'] == 'student':
+            serializer = MatHelpRequestSerializer(data=request.data, context={"user": user})
+            if serializer.is_valid():
+                serializer.save()
+                return Response(serializer.data, status=status.HTTP_201_CREATED)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        return Response(
+            {'message': 'Данный сервис недоступен для Вашей учетной записи.'},
+            status=status.HTTP_403_FORBIDDEN
+        )
 
 
 class SocStipRequestView(views.APIView):
@@ -154,11 +232,17 @@ class SocStipRequestView(views.APIView):
     """
 
     def post(self, request, format=None):
-        serializer = SocStipRequestSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        user = request.user.user
+        if user['user_type'] == 'student':
+            serializer = SocStipRequestSerializer(data=request.data, context={"user": user})
+            if serializer.is_valid():
+                serializer.save()
+                return Response(serializer.data, status=status.HTTP_201_CREATED)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        return Response(
+            {'message': 'Данный сервис недоступен для Вашей учетной записи.'},
+            status=status.HTTP_403_FORBIDDEN
+        )
 
 
 class ArmyRequestView(views.APIView):
@@ -168,11 +252,17 @@ class ArmyRequestView(views.APIView):
     """
 
     def post(self, request, format=None):
-        serializer = ArmyRequestSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        user = request.user.user
+        if user['user_type'] == 'student':
+            serializer = ArmyRequestSerializer(data=request.data, context={"user": user})
+            if serializer.is_valid():
+                serializer.save()
+                return Response(serializer.data, status=status.HTTP_201_CREATED)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        return Response(
+            {'message': 'Данный сервис недоступен для Вашей учетной записи.'},
+            status=status.HTTP_403_FORBIDDEN
+        )
 
 
 class FreeRequestView(views.APIView):
@@ -181,22 +271,34 @@ class FreeRequestView(views.APIView):
     """
 
     def post(self, request, format=None):
-        serializer = FreeRequestSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        user = request.user.user
+        if user['user_type'] == 'student':
+            serializer = FreeRequestSerializer(data=request.data, context={"user": user})
+            if serializer.is_valid():
+                serializer.save()
+                return Response(serializer.data, status=status.HTTP_201_CREATED)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        return Response(
+            {'message': 'Данный сервис недоступен для Вашей учетной записи.'},
+            status=status.HTTP_403_FORBIDDEN
+        )
 
 
 class RequestHistoryStudentView(views.APIView):
     """
-    История запросов справок пользователя
+    История запросов справок студента
     """
 
     def get(self, request, format=None):
-        queryset = RequestStudent.objects.all()
-        serializer = RequestHistoryStudentSerializer(queryset, many=True)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        user = request.user.user
+        if user['user_type'] == 'student':
+            queryset = RequestStudent.objects.filter(user_uuid=user['id'])
+            serializer = RequestHistoryStudentSerializer(queryset, many=True)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(
+            {'message': 'Данный сервис недоступен для Вашей учетной записи.'},
+            status=status.HTTP_403_FORBIDDEN
+        )
 
 
 class AddressListViewSet(views.APIView):
@@ -205,9 +307,14 @@ class AddressListViewSet(views.APIView):
     """
 
     def get(self, request, format=None):
-        queryset = Address.objects.all()
-        serializer = AddressSerializer(queryset, many=True)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        user = request.user.user
+        if user['user_type'] == 'student':
+            queryset = Address.objects.all()
+            serializer = AddressSerializer(queryset, many=True)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(
+            {'message': 'Данный сервис недоступен для Вашей учетной записи.'},
+            status=status.HTTP_403_FORBIDDEN)
 
 
 class RequestTypeListViewSet(views.APIView):
@@ -216,6 +323,11 @@ class RequestTypeListViewSet(views.APIView):
     """
 
     def get(self, request, format=None):
-        queryset = RequestStudentType.objects.all()
-        serializer = RequestTypeSerializer(queryset, many=True)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        user = request.user.user
+        if user['user_type'] == 'student':
+            queryset = RequestStudent.objects.filter()
+            serializer = RequestHistoryStudentSerializer(queryset, many=True)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(
+            {'message': 'Данный сервис недоступен для Вашей учетной записи.'},
+            status=status.HTTP_403_FORBIDDEN)
