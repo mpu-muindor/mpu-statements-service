@@ -11,9 +11,14 @@ tags:
   - name: admin
     description: Админка сервиса. Логин/пароль — admin/admin
   - name: student
-    description: 'Справки, доступные студенту'
+    description: Справки, доступные студенту
   - name: teacher
-    description: 'Справки, доступные преподавателю. Пока тут пусто'
+    description: Справки, доступные преподавателю
+securityDefinitions:
+  Bearer:
+    type: apiKey
+    name: Authorization
+    in: header
 paths:
   /student/requests/:
     get:
@@ -26,6 +31,8 @@ paths:
       produces:
         - application/json
       parameters: []
+      security:
+        - Bearer: []
       responses:
         '200':
           description: История всех запросов пользователя
@@ -42,6 +49,8 @@ paths:
       produces:
         - application/json
       parameters: []
+      security:
+        - Bearer: []
       responses:
         '200':
           description: Список всех адресов с названиями и id
@@ -58,6 +67,8 @@ paths:
       produces:
         - application/json
       parameters: []
+      security:
+        - Bearer: []
       responses:
         '200':
           description: Список всех типов с названиями и id
@@ -158,6 +169,8 @@ paths:
           description: Комментарий пользователя
           type: string
           nullable: true
+      security:
+        - Bearer: []
       responses:
         '201':
           description: Текст справки создан
@@ -202,6 +215,8 @@ paths:
           description: Комментарий пользователя
           type: string
           nullable: true
+      security:
+        - Bearer: []
       responses:
         '201':
           description: Текст справки создан
@@ -255,6 +270,8 @@ paths:
           description: Комментарий пользователя
           type: string
           nullable: true
+      security:
+        - Bearer: []
       responses:
         '201':
           description: Текст справки создан
@@ -303,6 +320,8 @@ paths:
           description: Комментарий пользователя
           type: string
           nullable: true
+      security:
+        - Bearer: []
       responses:
         '201':
           description: Текст справки создан
@@ -347,6 +366,8 @@ paths:
             только jpg и pdf.
           required: true
           type: file
+      security:
+        - Bearer: []
       responses:
         '201':
           description: Текст справки создан
@@ -379,6 +400,8 @@ paths:
           in: formData
           description: Причина восстановления пропуска
           type: string
+      security:
+        - Bearer: []
       responses:
         '201':
           description: Текст справки создан
@@ -459,6 +482,8 @@ paths:
           description: Должность руководителя организации для прохождения практики
           required: true
           type: string
+      security:
+        - Bearer: []
       responses:
         '201':
           description: Текст справки создан
@@ -560,6 +585,8 @@ paths:
             jpg и pdf.
           required: true
           type: file
+      security:
+        - Bearer: []
       responses:
         '201':
           description: Текст справки создан
@@ -717,6 +744,8 @@ paths:
             идее только jpg и pdf.
           required: true
           type: file
+      security:
+        - Bearer: []
       responses:
         '201':
           description: Текст справки создан
@@ -789,6 +818,8 @@ paths:
             По идее только jpg и pdf.
           required: true
           type: file
+      security:
+        - Bearer: []
       responses:
         '201':
           description: Текст справки создан
@@ -907,6 +938,8 @@ paths:
           description: Адрес временной регистрации
           nullable: true
           type: string
+      security:
+        - Bearer: []
       responses:
         '201':
           description: Текст справки создан
@@ -959,6 +992,8 @@ paths:
           description: Присоединить файл (при необходимости). По идее только jpg и pdf.
           type: file
           nullable: true
+      security:
+        - Bearer: []
       responses:
         '201':
           description: Текст справки создан
@@ -975,6 +1010,8 @@ paths:
       produces:
         - application/json
       parameters: []
+      security:
+        - Bearer: []
       responses:
         '200':
           description: История всех запросов преподавателя
@@ -993,19 +1030,9 @@ paths:
       produces:
         - application/json
       parameters:
-        - name: fio
-          in: formData
-          description: ФИО
-          required: true
-          type: string
         - name: structural_unit
           in: formData
           description: Структурное подразделение
-          required: true
-          type: string
-        - name: position
-          in: formData
-          description: Должность
           required: true
           type: string
         - name: email
@@ -1058,64 +1085,14 @@ paths:
           description: >
             Тема заявки:
 
-            + 1, "Получение нового компьютерного оборудования
+            + 1, Получение нового компьютерного оборудования
 
-            + 2, "Подключение компьютера, МФУ, телефона, WiFi
-
-            + 3, "Обслуживание принтеров, МФУ
-
-            + 4, "Вопрос по СЭД Directum и 1С
-
-            + 5, "Вопрос по Личному кабинету
-
-            + 6, "Прочее ИТ-обслуживание
-
-            + 7, "Справка с места работы
-
-            + 8, "Справка на визу
-
-            + 9, "Справка о стаже работы
-
-            10, "Справка о количестве неиспользованных дней отпуска
-
-            11, "Копия трудовой книжки
-
-            12, "Копии документов из личного дела
-
-            13, "Справка о работе на условиях внешнего совместительства для
-            внесения стажа в трудовую книжку
-
-            14, "Справка по форме 2-НДФЛ
-
-            15, "Справка о выплате (не выплате) единовременного пособия на
-            рождение ребенка
-
-            16, "Справка об отпуске по уходу за ребенком до 1,5 и 3 лет
-
-            17, "Справка о ежемесячных выплатах сотрудника, находящегося в
-            отпуске по уходу за ребенком (декрет)
           required: true
           type: array
           items:
             type: integer
             enum:
               - 1
-              - 2
-              - 3
-              - 4
-              - 5
-              - 6
-              - 7
-              - 8
-              - 9
-              - 10
-              - 11
-              - 12
-              - 13
-              - 14
-              - 15
-              - 16
-              - 17
         - name: request_text
           in: formData
           description: Текст заявки
@@ -1125,6 +1102,8 @@ paths:
           description: Присоединить файл (при необходимости)
           type: file
           nullable: true
+      security:
+        - Bearer: []
       responses:
         '201':
           description: Текст справки создан
@@ -1141,19 +1120,9 @@ paths:
       produces:
         - application/json
       parameters:
-        - name: fio
-          in: formData
-          description: ФИО
-          required: true
-          type: string
         - name: structural_unit
           in: formData
           description: Структурное подразделение
-          required: true
-          type: string
-        - name: position
-          in: formData
-          description: Должность
           required: true
           type: string
         - name: email
@@ -1206,64 +1175,14 @@ paths:
           description: >
             Тема заявки:
 
-            + 1, "Получение нового компьютерного оборудования
+            + 2, Подключение компьютера, МФУ, телефона, WiFi
 
-            + 2, "Подключение компьютера, МФУ, телефона, WiFi
-
-            + 3, "Обслуживание принтеров, МФУ
-
-            + 4, "Вопрос по СЭД Directum и 1С
-
-            + 5, "Вопрос по Личному кабинету
-
-            + 6, "Прочее ИТ-обслуживание
-
-            + 7, "Справка с места работы
-
-            + 8, "Справка на визу
-
-            + 9, "Справка о стаже работы
-
-            10, "Справка о количестве неиспользованных дней отпуска
-
-            11, "Копия трудовой книжки
-
-            12, "Копии документов из личного дела
-
-            13, "Справка о работе на условиях внешнего совместительства для
-            внесения стажа в трудовую книжку
-
-            14, "Справка по форме 2-НДФЛ
-
-            15, "Справка о выплате (не выплате) единовременного пособия на
-            рождение ребенка
-
-            16, "Справка об отпуске по уходу за ребенком до 1,5 и 3 лет
-
-            17, "Справка о ежемесячных выплатах сотрудника, находящегося в
-            отпуске по уходу за ребенком (декрет)
           required: true
           type: array
           items:
             type: integer
             enum:
-              - 1
               - 2
-              - 3
-              - 4
-              - 5
-              - 6
-              - 7
-              - 8
-              - 9
-              - 10
-              - 11
-              - 12
-              - 13
-              - 14
-              - 15
-              - 16
-              - 17
         - name: request_text
           in: formData
           description: Текст заявки
@@ -1273,6 +1192,8 @@ paths:
           description: Присоединить файл (при необходимости)
           type: file
           nullable: true
+      security:
+        - Bearer: []
       responses:
         '201':
           description: Текст справки создан
@@ -1289,19 +1210,9 @@ paths:
       produces:
         - application/json
       parameters:
-        - name: fio
-          in: formData
-          description: ФИО
-          required: true
-          type: string
         - name: structural_unit
           in: formData
           description: Структурное подразделение
-          required: true
-          type: string
-        - name: position
-          in: formData
-          description: Должность
           required: true
           type: string
         - name: email
@@ -1354,64 +1265,14 @@ paths:
           description: >
             Тема заявки:
 
-            + 1, "Получение нового компьютерного оборудования
+            + 3, Обслуживание принтеров, МФУ
 
-            + 2, "Подключение компьютера, МФУ, телефона, WiFi
-
-            + 3, "Обслуживание принтеров, МФУ
-
-            + 4, "Вопрос по СЭД Directum и 1С
-
-            + 5, "Вопрос по Личному кабинету
-
-            + 6, "Прочее ИТ-обслуживание
-
-            + 7, "Справка с места работы
-
-            + 8, "Справка на визу
-
-            + 9, "Справка о стаже работы
-
-            10, "Справка о количестве неиспользованных дней отпуска
-
-            11, "Копия трудовой книжки
-
-            12, "Копии документов из личного дела
-
-            13, "Справка о работе на условиях внешнего совместительства для
-            внесения стажа в трудовую книжку
-
-            14, "Справка по форме 2-НДФЛ
-
-            15, "Справка о выплате (не выплате) единовременного пособия на
-            рождение ребенка
-
-            16, "Справка об отпуске по уходу за ребенком до 1,5 и 3 лет
-
-            17, "Справка о ежемесячных выплатах сотрудника, находящегося в
-            отпуске по уходу за ребенком (декрет)
           required: true
           type: array
           items:
             type: integer
             enum:
-              - 1
-              - 2
               - 3
-              - 4
-              - 5
-              - 6
-              - 7
-              - 8
-              - 9
-              - 10
-              - 11
-              - 12
-              - 13
-              - 14
-              - 15
-              - 16
-              - 17
         - name: request_text
           in: formData
           description: Текст заявки
@@ -1421,6 +1282,8 @@ paths:
           description: Присоединить файл (при необходимости)
           type: file
           nullable: true
+      security:
+        - Bearer: []
       responses:
         '201':
           description: Текст справки создан
@@ -1437,19 +1300,9 @@ paths:
       produces:
         - application/json
       parameters:
-        - name: fio
-          in: formData
-          description: ФИО
-          required: true
-          type: string
         - name: structural_unit
           in: formData
           description: Структурное подразделение
-          required: true
-          type: string
-        - name: position
-          in: formData
-          description: Должность
           required: true
           type: string
         - name: email
@@ -1502,64 +1355,14 @@ paths:
           description: >
             Тема заявки:
 
-            + 1, "Получение нового компьютерного оборудования
+            + 4, Вопрос по СЭД Directum и 1С
 
-            + 2, "Подключение компьютера, МФУ, телефона, WiFi
-
-            + 3, "Обслуживание принтеров, МФУ
-
-            + 4, "Вопрос по СЭД Directum и 1С
-
-            + 5, "Вопрос по Личному кабинету
-
-            + 6, "Прочее ИТ-обслуживание
-
-            + 7, "Справка с места работы
-
-            + 8, "Справка на визу
-
-            + 9, "Справка о стаже работы
-
-            10, "Справка о количестве неиспользованных дней отпуска
-
-            11, "Копия трудовой книжки
-
-            12, "Копии документов из личного дела
-
-            13, "Справка о работе на условиях внешнего совместительства для
-            внесения стажа в трудовую книжку
-
-            14, "Справка по форме 2-НДФЛ
-
-            15, "Справка о выплате (не выплате) единовременного пособия на
-            рождение ребенка
-
-            16, "Справка об отпуске по уходу за ребенком до 1,5 и 3 лет
-
-            17, "Справка о ежемесячных выплатах сотрудника, находящегося в
-            отпуске по уходу за ребенком (декрет)
           required: true
           type: array
           items:
             type: integer
             enum:
-              - 1
-              - 2
-              - 3
               - 4
-              - 5
-              - 6
-              - 7
-              - 8
-              - 9
-              - 10
-              - 11
-              - 12
-              - 13
-              - 14
-              - 15
-              - 16
-              - 17
         - name: request_text
           in: formData
           description: Текст заявки
@@ -1569,6 +1372,8 @@ paths:
           description: Присоединить файл (при необходимости)
           type: file
           nullable: true
+      security:
+        - Bearer: []
       responses:
         '201':
           description: Текст справки создан
@@ -1585,19 +1390,9 @@ paths:
       produces:
         - application/json
       parameters:
-        - name: fio
-          in: formData
-          description: ФИО
-          required: true
-          type: string
         - name: structural_unit
           in: formData
           description: Структурное подразделение
-          required: true
-          type: string
-        - name: position
-          in: formData
-          description: Должность
           required: true
           type: string
         - name: email
@@ -1650,64 +1445,14 @@ paths:
           description: >
             Тема заявки:
 
-            + 1, "Получение нового компьютерного оборудования
+            + 5, Вопрос по Личному кабинету
 
-            + 2, "Подключение компьютера, МФУ, телефона, WiFi
-
-            + 3, "Обслуживание принтеров, МФУ
-
-            + 4, "Вопрос по СЭД Directum и 1С
-
-            + 5, "Вопрос по Личному кабинету
-
-            + 6, "Прочее ИТ-обслуживание
-
-            + 7, "Справка с места работы
-
-            + 8, "Справка на визу
-
-            + 9, "Справка о стаже работы
-
-            10, "Справка о количестве неиспользованных дней отпуска
-
-            11, "Копия трудовой книжки
-
-            12, "Копии документов из личного дела
-
-            13, "Справка о работе на условиях внешнего совместительства для
-            внесения стажа в трудовую книжку
-
-            14, "Справка по форме 2-НДФЛ
-
-            15, "Справка о выплате (не выплате) единовременного пособия на
-            рождение ребенка
-
-            16, "Справка об отпуске по уходу за ребенком до 1,5 и 3 лет
-
-            17, "Справка о ежемесячных выплатах сотрудника, находящегося в
-            отпуске по уходу за ребенком (декрет)
           required: true
           type: array
           items:
             type: integer
             enum:
-              - 1
-              - 2
-              - 3
-              - 4
               - 5
-              - 6
-              - 7
-              - 8
-              - 9
-              - 10
-              - 11
-              - 12
-              - 13
-              - 14
-              - 15
-              - 16
-              - 17
         - name: request_text
           in: formData
           description: Текст заявки
@@ -1717,6 +1462,8 @@ paths:
           description: Присоединить файл (при необходимости)
           type: file
           nullable: true
+      security:
+        - Bearer: []
       responses:
         '201':
           description: Текст справки создан
@@ -1733,19 +1480,9 @@ paths:
       produces:
         - application/json
       parameters:
-        - name: fio
-          in: formData
-          description: ФИО
-          required: true
-          type: string
         - name: structural_unit
           in: formData
           description: Структурное подразделение
-          required: true
-          type: string
-        - name: position
-          in: formData
-          description: Должность
           required: true
           type: string
         - name: email
@@ -1798,64 +1535,14 @@ paths:
           description: >
             Тема заявки:
 
-            + 1, "Получение нового компьютерного оборудования
+            + 6, Прочее ИТ-обслуживание
 
-            + 2, "Подключение компьютера, МФУ, телефона, WiFi
-
-            + 3, "Обслуживание принтеров, МФУ
-
-            + 4, "Вопрос по СЭД Directum и 1С
-
-            + 5, "Вопрос по Личному кабинету
-
-            + 6, "Прочее ИТ-обслуживание
-
-            + 7, "Справка с места работы
-
-            + 8, "Справка на визу
-
-            + 9, "Справка о стаже работы
-
-            10, "Справка о количестве неиспользованных дней отпуска
-
-            11, "Копия трудовой книжки
-
-            12, "Копии документов из личного дела
-
-            13, "Справка о работе на условиях внешнего совместительства для
-            внесения стажа в трудовую книжку
-
-            14, "Справка по форме 2-НДФЛ
-
-            15, "Справка о выплате (не выплате) единовременного пособия на
-            рождение ребенка
-
-            16, "Справка об отпуске по уходу за ребенком до 1,5 и 3 лет
-
-            17, "Справка о ежемесячных выплатах сотрудника, находящегося в
-            отпуске по уходу за ребенком (декрет)
           required: true
           type: array
           items:
             type: integer
             enum:
-              - 1
-              - 2
-              - 3
-              - 4
-              - 5
               - 6
-              - 7
-              - 8
-              - 9
-              - 10
-              - 11
-              - 12
-              - 13
-              - 14
-              - 15
-              - 16
-              - 17
         - name: request_text
           in: formData
           description: Текст заявки
@@ -1865,6 +1552,8 @@ paths:
           description: Присоединить файл (при необходимости)
           type: file
           nullable: true
+      security:
+        - Bearer: []
       responses:
         '201':
           description: Текст справки создан
@@ -1881,19 +1570,9 @@ paths:
       produces:
         - application/json
       parameters:
-        - name: fio
-          in: formData
-          description: ФИО
-          required: true
-          type: string
         - name: structural_unit
           in: formData
           description: Структурное подразделение
-          required: true
-          type: string
-        - name: position
-          in: formData
-          description: Должность
           required: true
           type: string
         - name: email
@@ -1946,64 +1625,14 @@ paths:
           description: >
             Тема заявки:
 
-            + 1, "Получение нового компьютерного оборудования
+            + 7, Справка с места работы
 
-            + 2, "Подключение компьютера, МФУ, телефона, WiFi
-
-            + 3, "Обслуживание принтеров, МФУ
-
-            + 4, "Вопрос по СЭД Directum и 1С
-
-            + 5, "Вопрос по Личному кабинету
-
-            + 6, "Прочее ИТ-обслуживание
-
-            + 7, "Справка с места работы
-
-            + 8, "Справка на визу
-
-            + 9, "Справка о стаже работы
-
-            10, "Справка о количестве неиспользованных дней отпуска
-
-            11, "Копия трудовой книжки
-
-            12, "Копии документов из личного дела
-
-            13, "Справка о работе на условиях внешнего совместительства для
-            внесения стажа в трудовую книжку
-
-            14, "Справка по форме 2-НДФЛ
-
-            15, "Справка о выплате (не выплате) единовременного пособия на
-            рождение ребенка
-
-            16, "Справка об отпуске по уходу за ребенком до 1,5 и 3 лет
-
-            17, "Справка о ежемесячных выплатах сотрудника, находящегося в
-            отпуске по уходу за ребенком (декрет)
           required: true
           type: array
           items:
             type: integer
             enum:
-              - 1
-              - 2
-              - 3
-              - 4
-              - 5
-              - 6
               - 7
-              - 8
-              - 9
-              - 10
-              - 11
-              - 12
-              - 13
-              - 14
-              - 15
-              - 16
-              - 17
         - name: request_text
           in: formData
           description: Текст заявки
@@ -2036,7 +1665,6 @@ paths:
             4, МФЦ Автозаводская, д. 16, аудитория 2315
             5, Отдел кадров
             6, Бухгалтерия
-          required: true
           type: array
           items:
             type: integer
@@ -2047,6 +1675,8 @@ paths:
               - 4
               - 5
               - 6
+      security:
+        - Bearer: []
       responses:
         '201':
           description: Текст справки создан
@@ -2063,19 +1693,9 @@ paths:
       produces:
         - application/json
       parameters:
-        - name: fio
-          in: formData
-          description: ФИО
-          required: true
-          type: string
         - name: structural_unit
           in: formData
           description: Структурное подразделение
-          required: true
-          type: string
-        - name: position
-          in: formData
-          description: Должность
           required: true
           type: string
         - name: email
@@ -2128,64 +1748,14 @@ paths:
           description: >
             Тема заявки:
 
-            + 1, "Получение нового компьютерного оборудования
+            + 8, Справка на визу
 
-            + 2, "Подключение компьютера, МФУ, телефона, WiFi
-
-            + 3, "Обслуживание принтеров, МФУ
-
-            + 4, "Вопрос по СЭД Directum и 1С
-
-            + 5, "Вопрос по Личному кабинету
-
-            + 6, "Прочее ИТ-обслуживание
-
-            + 7, "Справка с места работы
-
-            + 8, "Справка на визу
-
-            + 9, "Справка о стаже работы
-
-            10, "Справка о количестве неиспользованных дней отпуска
-
-            11, "Копия трудовой книжки
-
-            12, "Копии документов из личного дела
-
-            13, "Справка о работе на условиях внешнего совместительства для
-            внесения стажа в трудовую книжку
-
-            14, "Справка по форме 2-НДФЛ
-
-            15, "Справка о выплате (не выплате) единовременного пособия на
-            рождение ребенка
-
-            16, "Справка об отпуске по уходу за ребенком до 1,5 и 3 лет
-
-            17, "Справка о ежемесячных выплатах сотрудника, находящегося в
-            отпуске по уходу за ребенком (декрет)
           required: true
           type: array
           items:
             type: integer
             enum:
-              - 1
-              - 2
-              - 3
-              - 4
-              - 5
-              - 6
-              - 7
               - 8
-              - 9
-              - 10
-              - 11
-              - 12
-              - 13
-              - 14
-              - 15
-              - 16
-              - 17
         - name: request_text
           in: formData
           description: Текст заявки
@@ -2218,7 +1788,6 @@ paths:
             4, МФЦ Автозаводская, д. 16, аудитория 2315
             5, Отдел кадров
             6, Бухгалтерия
-          required: true
           type: array
           items:
             type: integer
@@ -2229,6 +1798,8 @@ paths:
               - 4
               - 5
               - 6
+      security:
+        - Bearer: []
       responses:
         '201':
           description: Текст справки создан
@@ -2245,19 +1816,9 @@ paths:
       produces:
         - application/json
       parameters:
-        - name: fio
-          in: formData
-          description: ФИО
-          required: true
-          type: string
         - name: structural_unit
           in: formData
           description: Структурное подразделение
-          required: true
-          type: string
-        - name: position
-          in: formData
-          description: Должность
           required: true
           type: string
         - name: email
@@ -2310,64 +1871,14 @@ paths:
           description: >
             Тема заявки:
 
-            + 1, "Получение нового компьютерного оборудования
+            + 9, Справка о стаже работы
 
-            + 2, "Подключение компьютера, МФУ, телефона, WiFi
-
-            + 3, "Обслуживание принтеров, МФУ
-
-            + 4, "Вопрос по СЭД Directum и 1С
-
-            + 5, "Вопрос по Личному кабинету
-
-            + 6, "Прочее ИТ-обслуживание
-
-            + 7, "Справка с места работы
-
-            + 8, "Справка на визу
-
-            + 9, "Справка о стаже работы
-
-            10, "Справка о количестве неиспользованных дней отпуска
-
-            11, "Копия трудовой книжки
-
-            12, "Копии документов из личного дела
-
-            13, "Справка о работе на условиях внешнего совместительства для
-            внесения стажа в трудовую книжку
-
-            14, "Справка по форме 2-НДФЛ
-
-            15, "Справка о выплате (не выплате) единовременного пособия на
-            рождение ребенка
-
-            16, "Справка об отпуске по уходу за ребенком до 1,5 и 3 лет
-
-            17, "Справка о ежемесячных выплатах сотрудника, находящегося в
-            отпуске по уходу за ребенком (декрет)
           required: true
           type: array
           items:
             type: integer
             enum:
-              - 1
-              - 2
-              - 3
-              - 4
-              - 5
-              - 6
-              - 7
-              - 8
               - 9
-              - 10
-              - 11
-              - 12
-              - 13
-              - 14
-              - 15
-              - 16
-              - 17
         - name: request_text
           in: formData
           description: Текст заявки
@@ -2400,7 +1911,6 @@ paths:
             4, МФЦ Автозаводская, д. 16, аудитория 2315
             5, Отдел кадров
             6, Бухгалтерия
-          required: true
           type: array
           items:
             type: integer
@@ -2411,6 +1921,8 @@ paths:
               - 4
               - 5
               - 6
+      security:
+        - Bearer: []
       responses:
         '201':
           description: Текст справки создан
@@ -2427,19 +1939,9 @@ paths:
       produces:
         - application/json
       parameters:
-        - name: fio
-          in: formData
-          description: ФИО
-          required: true
-          type: string
         - name: structural_unit
           in: formData
           description: Структурное подразделение
-          required: true
-          type: string
-        - name: position
-          in: formData
-          description: Должность
           required: true
           type: string
         - name: email
@@ -2492,64 +1994,14 @@ paths:
           description: >
             Тема заявки:
 
-            + 1, "Получение нового компьютерного оборудования
+            + 10, Справка о количестве неиспользованных дней отпуска
 
-            + 2, "Подключение компьютера, МФУ, телефона, WiFi
-
-            + 3, "Обслуживание принтеров, МФУ
-
-            + 4, "Вопрос по СЭД Directum и 1С
-
-            + 5, "Вопрос по Личному кабинету
-
-            + 6, "Прочее ИТ-обслуживание
-
-            + 7, "Справка с места работы
-
-            + 8, "Справка на визу
-
-            + 9, "Справка о стаже работы
-
-            10, "Справка о количестве неиспользованных дней отпуска
-
-            11, "Копия трудовой книжки
-
-            12, "Копии документов из личного дела
-
-            13, "Справка о работе на условиях внешнего совместительства для
-            внесения стажа в трудовую книжку
-
-            14, "Справка по форме 2-НДФЛ
-
-            15, "Справка о выплате (не выплате) единовременного пособия на
-            рождение ребенка
-
-            16, "Справка об отпуске по уходу за ребенком до 1,5 и 3 лет
-
-            17, "Справка о ежемесячных выплатах сотрудника, находящегося в
-            отпуске по уходу за ребенком (декрет)
           required: true
           type: array
           items:
             type: integer
             enum:
-              - 1
-              - 2
-              - 3
-              - 4
-              - 5
-              - 6
-              - 7
-              - 8
-              - 9
               - 10
-              - 11
-              - 12
-              - 13
-              - 14
-              - 15
-              - 16
-              - 17
         - name: request_text
           in: formData
           description: Текст заявки
@@ -2582,7 +2034,6 @@ paths:
             4, МФЦ Автозаводская, д. 16, аудитория 2315
             5, Отдел кадров
             6, Бухгалтерия
-          required: true
           type: array
           items:
             type: integer
@@ -2593,6 +2044,8 @@ paths:
               - 4
               - 5
               - 6
+      security:
+        - Bearer: []
       responses:
         '201':
           description: Текст справки создан
@@ -2609,19 +2062,9 @@ paths:
       produces:
         - application/json
       parameters:
-        - name: fio
-          in: formData
-          description: ФИО
-          required: true
-          type: string
         - name: structural_unit
           in: formData
           description: Структурное подразделение
-          required: true
-          type: string
-        - name: position
-          in: formData
-          description: Должность
           required: true
           type: string
         - name: email
@@ -2674,64 +2117,14 @@ paths:
           description: >
             Тема заявки:
 
-            + 1, "Получение нового компьютерного оборудования
+            + 11, Копия трудовой книжки
 
-            + 2, "Подключение компьютера, МФУ, телефона, WiFi
-
-            + 3, "Обслуживание принтеров, МФУ
-
-            + 4, "Вопрос по СЭД Directum и 1С
-
-            + 5, "Вопрос по Личному кабинету
-
-            + 6, "Прочее ИТ-обслуживание
-
-            + 7, "Справка с места работы
-
-            + 8, "Справка на визу
-
-            + 9, "Справка о стаже работы
-
-            10, "Справка о количестве неиспользованных дней отпуска
-
-            11, "Копия трудовой книжки
-
-            12, "Копии документов из личного дела
-
-            13, "Справка о работе на условиях внешнего совместительства для
-            внесения стажа в трудовую книжку
-
-            14, "Справка по форме 2-НДФЛ
-
-            15, "Справка о выплате (не выплате) единовременного пособия на
-            рождение ребенка
-
-            16, "Справка об отпуске по уходу за ребенком до 1,5 и 3 лет
-
-            17, "Справка о ежемесячных выплатах сотрудника, находящегося в
-            отпуске по уходу за ребенком (декрет)
           required: true
           type: array
           items:
             type: integer
             enum:
-              - 1
-              - 2
-              - 3
-              - 4
-              - 5
-              - 6
-              - 7
-              - 8
-              - 9
-              - 10
               - 11
-              - 12
-              - 13
-              - 14
-              - 15
-              - 16
-              - 17
         - name: request_text
           in: formData
           description: Текст заявки
@@ -2764,7 +2157,6 @@ paths:
             4, МФЦ Автозаводская, д. 16, аудитория 2315
             5, Отдел кадров
             6, Бухгалтерия
-          required: true
           type: array
           items:
             type: integer
@@ -2775,6 +2167,8 @@ paths:
               - 4
               - 5
               - 6
+      security:
+        - Bearer: []
       responses:
         '201':
           description: Текст справки создан
@@ -2791,19 +2185,9 @@ paths:
       produces:
         - application/json
       parameters:
-        - name: fio
-          in: formData
-          description: ФИО
-          required: true
-          type: string
         - name: structural_unit
           in: formData
           description: Структурное подразделение
-          required: true
-          type: string
-        - name: position
-          in: formData
-          description: Должность
           required: true
           type: string
         - name: email
@@ -2856,64 +2240,14 @@ paths:
           description: >
             Тема заявки:
 
-            + 1, "Получение нового компьютерного оборудования
+            + 12, Копии документов из личного дела
 
-            + 2, "Подключение компьютера, МФУ, телефона, WiFi
-
-            + 3, "Обслуживание принтеров, МФУ
-
-            + 4, "Вопрос по СЭД Directum и 1С
-
-            + 5, "Вопрос по Личному кабинету
-
-            + 6, "Прочее ИТ-обслуживание
-
-            + 7, "Справка с места работы
-
-            + 8, "Справка на визу
-
-            + 9, "Справка о стаже работы
-
-            10, "Справка о количестве неиспользованных дней отпуска
-
-            11, "Копия трудовой книжки
-
-            12, "Копии документов из личного дела
-
-            13, "Справка о работе на условиях внешнего совместительства для
-            внесения стажа в трудовую книжку
-
-            14, "Справка по форме 2-НДФЛ
-
-            15, "Справка о выплате (не выплате) единовременного пособия на
-            рождение ребенка
-
-            16, "Справка об отпуске по уходу за ребенком до 1,5 и 3 лет
-
-            17, "Справка о ежемесячных выплатах сотрудника, находящегося в
-            отпуске по уходу за ребенком (декрет)
           required: true
           type: array
           items:
             type: integer
             enum:
-              - 1
-              - 2
-              - 3
-              - 4
-              - 5
-              - 6
-              - 7
-              - 8
-              - 9
-              - 10
-              - 11
               - 12
-              - 13
-              - 14
-              - 15
-              - 16
-              - 17
         - name: request_text
           in: formData
           description: Текст заявки
@@ -2946,7 +2280,6 @@ paths:
             4, МФЦ Автозаводская, д. 16, аудитория 2315
             5, Отдел кадров
             6, Бухгалтерия
-          required: true
           type: array
           items:
             type: integer
@@ -2957,6 +2290,8 @@ paths:
               - 4
               - 5
               - 6
+      security:
+        - Bearer: []
       responses:
         '201':
           description: Текст справки создан
@@ -2977,19 +2312,9 @@ paths:
       produces:
         - application/json
       parameters:
-        - name: fio
-          in: formData
-          description: ФИО
-          required: true
-          type: string
         - name: structural_unit
           in: formData
           description: Структурное подразделение
-          required: true
-          type: string
-        - name: position
-          in: formData
-          description: Должность
           required: true
           type: string
         - name: email
@@ -3042,64 +2367,15 @@ paths:
           description: >
             Тема заявки:
 
-            + 1, "Получение нового компьютерного оборудования
-
-            + 2, "Подключение компьютера, МФУ, телефона, WiFi
-
-            + 3, "Обслуживание принтеров, МФУ
-
-            + 4, "Вопрос по СЭД Directum и 1С
-
-            + 5, "Вопрос по Личному кабинету
-
-            + 6, "Прочее ИТ-обслуживание
-
-            + 7, "Справка с места работы
-
-            + 8, "Справка на визу
-
-            + 9, "Справка о стаже работы
-
-            10, "Справка о количестве неиспользованных дней отпуска
-
-            11, "Копия трудовой книжки
-
-            12, "Копии документов из личного дела
-
-            13, "Справка о работе на условиях внешнего совместительства для
+            + 13, Справка о работе на условиях внешнего совместительства для
             внесения стажа в трудовую книжку
 
-            14, "Справка по форме 2-НДФЛ
-
-            15, "Справка о выплате (не выплате) единовременного пособия на
-            рождение ребенка
-
-            16, "Справка об отпуске по уходу за ребенком до 1,5 и 3 лет
-
-            17, "Справка о ежемесячных выплатах сотрудника, находящегося в
-            отпуске по уходу за ребенком (декрет)
           required: true
           type: array
           items:
             type: integer
             enum:
-              - 1
-              - 2
-              - 3
-              - 4
-              - 5
-              - 6
-              - 7
-              - 8
-              - 9
-              - 10
-              - 11
-              - 12
               - 13
-              - 14
-              - 15
-              - 16
-              - 17
         - name: request_text
           in: formData
           description: Текст заявки
@@ -3132,7 +2408,6 @@ paths:
             4, МФЦ Автозаводская, д. 16, аудитория 2315
             5, Отдел кадров
             6, Бухгалтерия
-          required: true
           type: array
           items:
             type: integer
@@ -3143,6 +2418,8 @@ paths:
               - 4
               - 5
               - 6
+      security:
+        - Bearer: []
       responses:
         '201':
           description: Текст справки создан
@@ -3159,19 +2436,9 @@ paths:
       produces:
         - application/json
       parameters:
-        - name: fio
-          in: formData
-          description: ФИО
-          required: true
-          type: string
         - name: structural_unit
           in: formData
           description: Структурное подразделение
-          required: true
-          type: string
-        - name: position
-          in: formData
-          description: Должность
           required: true
           type: string
         - name: email
@@ -3224,64 +2491,14 @@ paths:
           description: >
             Тема заявки:
 
-            + 1, "Получение нового компьютерного оборудования
+            + 14, Справка по форме 2-НДФЛ
 
-            + 2, "Подключение компьютера, МФУ, телефона, WiFi
-
-            + 3, "Обслуживание принтеров, МФУ
-
-            + 4, "Вопрос по СЭД Directum и 1С
-
-            + 5, "Вопрос по Личному кабинету
-
-            + 6, "Прочее ИТ-обслуживание
-
-            + 7, "Справка с места работы
-
-            + 8, "Справка на визу
-
-            + 9, "Справка о стаже работы
-
-            10, "Справка о количестве неиспользованных дней отпуска
-
-            11, "Копия трудовой книжки
-
-            12, "Копии документов из личного дела
-
-            13, "Справка о работе на условиях внешнего совместительства для
-            внесения стажа в трудовую книжку
-
-            14, "Справка по форме 2-НДФЛ
-
-            15, "Справка о выплате (не выплате) единовременного пособия на
-            рождение ребенка
-
-            16, "Справка об отпуске по уходу за ребенком до 1,5 и 3 лет
-
-            17, "Справка о ежемесячных выплатах сотрудника, находящегося в
-            отпуске по уходу за ребенком (декрет)
           required: true
           type: array
           items:
             type: integer
             enum:
-              - 1
-              - 2
-              - 3
-              - 4
-              - 5
-              - 6
-              - 7
-              - 8
-              - 9
-              - 10
-              - 11
-              - 12
-              - 13
               - 14
-              - 15
-              - 16
-              - 17
         - name: request_period
           in: formData
           description: Период справки
@@ -3334,7 +2551,6 @@ paths:
             4, МФЦ Автозаводская, д. 16, аудитория 2315
             5, Отдел кадров
             6, Бухгалтерия
-          required: true
           type: array
           items:
             type: integer
@@ -3345,6 +2561,8 @@ paths:
               - 4
               - 5
               - 6
+      security:
+        - Bearer: []
       responses:
         '201':
           description: Текст справки создан
@@ -3365,19 +2583,9 @@ paths:
       produces:
         - application/json
       parameters:
-        - name: fio
-          in: formData
-          description: ФИО
-          required: true
-          type: string
         - name: structural_unit
           in: formData
           description: Структурное подразделение
-          required: true
-          type: string
-        - name: position
-          in: formData
-          description: Должность
           required: true
           type: string
         - name: email
@@ -3430,64 +2638,15 @@ paths:
           description: >
             Тема заявки:
 
-            + 1, "Получение нового компьютерного оборудования
-
-            + 2, "Подключение компьютера, МФУ, телефона, WiFi
-
-            + 3, "Обслуживание принтеров, МФУ
-
-            + 4, "Вопрос по СЭД Directum и 1С
-
-            + 5, "Вопрос по Личному кабинету
-
-            + 6, "Прочее ИТ-обслуживание
-
-            + 7, "Справка с места работы
-
-            + 8, "Справка на визу
-
-            + 9, "Справка о стаже работы
-
-            10, "Справка о количестве неиспользованных дней отпуска
-
-            11, "Копия трудовой книжки
-
-            12, "Копии документов из личного дела
-
-            13, "Справка о работе на условиях внешнего совместительства для
-            внесения стажа в трудовую книжку
-
-            14, "Справка по форме 2-НДФЛ
-
-            15, "Справка о выплате (не выплате) единовременного пособия на
+            + 15, Справка о выплате (не выплате) единовременного пособия на
             рождение ребенка
 
-            16, "Справка об отпуске по уходу за ребенком до 1,5 и 3 лет
-
-            17, "Справка о ежемесячных выплатах сотрудника, находящегося в
-            отпуске по уходу за ребенком (декрет)
           required: true
           type: array
           items:
             type: integer
             enum:
-              - 1
-              - 2
-              - 3
-              - 4
-              - 5
-              - 6
-              - 7
-              - 8
-              - 9
-              - 10
-              - 11
-              - 12
-              - 13
-              - 14
               - 15
-              - 16
-              - 17
         - name: request_period
           in: formData
           description: Период справки
@@ -3540,7 +2699,6 @@ paths:
             4, МФЦ Автозаводская, д. 16, аудитория 2315
             5, Отдел кадров
             6, Бухгалтерия
-          required: true
           type: array
           items:
             type: integer
@@ -3551,6 +2709,8 @@ paths:
               - 4
               - 5
               - 6
+      security:
+        - Bearer: []
       responses:
         '201':
           description: Текст справки создан
@@ -3567,19 +2727,9 @@ paths:
       produces:
         - application/json
       parameters:
-        - name: fio
-          in: formData
-          description: ФИО
-          required: true
-          type: string
         - name: structural_unit
           in: formData
           description: Структурное подразделение
-          required: true
-          type: string
-        - name: position
-          in: formData
-          description: Должность
           required: true
           type: string
         - name: email
@@ -3632,64 +2782,14 @@ paths:
           description: >
             Тема заявки:
 
-            + 1, "Получение нового компьютерного оборудования
+            + 16, Справка об отпуске по уходу за ребенком до 1,5 и 3 лет
 
-            + 2, "Подключение компьютера, МФУ, телефона, WiFi
-
-            + 3, "Обслуживание принтеров, МФУ
-
-            + 4, "Вопрос по СЭД Directum и 1С
-
-            + 5, "Вопрос по Личному кабинету
-
-            + 6, "Прочее ИТ-обслуживание
-
-            + 7, "Справка с места работы
-
-            + 8, "Справка на визу
-
-            + 9, "Справка о стаже работы
-
-            10, "Справка о количестве неиспользованных дней отпуска
-
-            11, "Копия трудовой книжки
-
-            12, "Копии документов из личного дела
-
-            13, "Справка о работе на условиях внешнего совместительства для
-            внесения стажа в трудовую книжку
-
-            14, "Справка по форме 2-НДФЛ
-
-            15, "Справка о выплате (не выплате) единовременного пособия на
-            рождение ребенка
-
-            16, "Справка об отпуске по уходу за ребенком до 1,5 и 3 лет
-
-            17, "Справка о ежемесячных выплатах сотрудника, находящегося в
-            отпуске по уходу за ребенком (декрет)
           required: true
           type: array
           items:
             type: integer
             enum:
-              - 1
-              - 2
-              - 3
-              - 4
-              - 5
-              - 6
-              - 7
-              - 8
-              - 9
-              - 10
-              - 11
-              - 12
-              - 13
-              - 14
-              - 15
               - 16
-              - 17
         - name: request_period
           in: formData
           description: Период справки
@@ -3742,7 +2842,6 @@ paths:
             4, МФЦ Автозаводская, д. 16, аудитория 2315
             5, Отдел кадров
             6, Бухгалтерия
-          required: true
           type: array
           items:
             type: integer
@@ -3753,6 +2852,8 @@ paths:
               - 4
               - 5
               - 6
+      security:
+        - Bearer: []
       responses:
         '201':
           description: Текст справки создан
@@ -3773,19 +2874,9 @@ paths:
       produces:
         - application/json
       parameters:
-        - name: fio
-          in: formData
-          description: ФИО
-          required: true
-          type: string
         - name: structural_unit
           in: formData
           description: Структурное подразделение
-          required: true
-          type: string
-        - name: position
-          in: formData
-          description: Должность
           required: true
           type: string
         - name: email
@@ -3838,63 +2929,13 @@ paths:
           description: >
             Тема заявки:
 
-            + 1, "Получение нового компьютерного оборудования
-
-            + 2, "Подключение компьютера, МФУ, телефона, WiFi
-
-            + 3, "Обслуживание принтеров, МФУ
-
-            + 4, "Вопрос по СЭД Directum и 1С
-
-            + 5, "Вопрос по Личному кабинету
-
-            + 6, "Прочее ИТ-обслуживание
-
-            + 7, "Справка с места работы
-
-            + 8, "Справка на визу
-
-            + 9, "Справка о стаже работы
-
-            10, "Справка о количестве неиспользованных дней отпуска
-
-            11, "Копия трудовой книжки
-
-            12, "Копии документов из личного дела
-
-            13, "Справка о работе на условиях внешнего совместительства для
-            внесения стажа в трудовую книжку
-
-            14, "Справка по форме 2-НДФЛ
-
-            15, "Справка о выплате (не выплате) единовременного пособия на
-            рождение ребенка
-
-            16, "Справка об отпуске по уходу за ребенком до 1,5 и 3 лет
-
-            17, "Справка о ежемесячных выплатах сотрудника, находящегося в
+            + 17, Справка о ежемесячных выплатах сотрудника, находящегося в
             отпуске по уходу за ребенком (декрет)
           required: true
           type: array
           items:
             type: integer
             enum:
-              - 1
-              - 2
-              - 3
-              - 4
-              - 5
-              - 6
-              - 7
-              - 8
-              - 9
-              - 10
-              - 11
-              - 12
-              - 13
-              - 14
-              - 15
-              - 16
               - 17
         - name: request_period
           in: formData
@@ -3948,7 +2989,6 @@ paths:
             4, МФЦ Автозаводская, д. 16, аудитория 2315
             5, Отдел кадров
             6, Бухгалтерия
-          required: true
           type: array
           items:
             type: integer
@@ -3959,6 +2999,8 @@ paths:
               - 4
               - 5
               - 6
+      security:
+        - Bearer: []
       responses:
         '201':
           description: Текст справки создан

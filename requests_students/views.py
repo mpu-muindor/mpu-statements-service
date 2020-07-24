@@ -10,8 +10,8 @@ class EdRequestView(views.APIView):
     """
 
     def post(self, request, format=None):
-        user = request.user.user
-        if user['user_type'] == 'student':
+        user = request.user
+        if user.user_type == 'student':
             serializer = EdRequestSerializer(data=request.data, context={"user": user})
             if serializer.is_valid():
                 serializer.save()
@@ -29,8 +29,8 @@ class StatusRequestView(views.APIView):
     """
 
     def post(self, request, format=None):
-        user = request.user.user
-        if user['user_type'] == 'student':
+        user = request.user
+        if user.user_type == 'student':
             serializer = StatusRequestSerializer(data=request.data, context={"user": user})
             if serializer.is_valid():
                 serializer.save()
@@ -48,8 +48,8 @@ class SobesRequestView(views.APIView):
     """
 
     def post(self, request, format=None):
-        user = request.user.user
-        if user['user_type'] == 'student':
+        user = request.user
+        if user.user_type == 'student':
             serializer = SobesRequestSerializer(data=request.data, context={"user": user})
             if serializer.is_valid():
                 serializer.save()
@@ -67,8 +67,8 @@ class CallRequestView(views.APIView):
     """
 
     def post(self, request, format=None):
-        user = request.user.user
-        if user['user_type'] == 'student':
+        user = request.user
+        if user.user_type == 'student':
             serializer = CallRequestSerializer(data=request.data, context={"user": user})
             if serializer.is_valid():
                 serializer.save()
@@ -86,8 +86,8 @@ class PersDataRequestView(views.APIView):
     """
 
     def post(self, request, format=None):
-        user = request.user.user
-        if user['user_type'] == 'student':
+        user = request.user
+        if user.user_type == 'student':
             serializer = PersDataRequestSerializer(data=request.data, context={"user": user})
             if serializer.is_valid():
                 serializer.save()
@@ -105,8 +105,8 @@ class PassRestoreRequestView(views.APIView):
     """
 
     def post(self, request, format=None):
-        user = request.user.user
-        if user['user_type'] == 'student':
+        user = request.user
+        if user.user_type == 'student':
             serializer = PassRestoreRequestSerializer(data=request.data, context={"user": user})
             if serializer.is_valid():
                 serializer.save()
@@ -124,8 +124,8 @@ class PracticeSelectRequestView(views.APIView):
     """
 
     def get(self, request, format=None):
-        user = request.user.user
-        if user['user_type'] == 'student':
+        user = request.user
+        if user.user_type == 'student':
             return Response(
                 {'message': 'Данный вид практики в настоящее время недоступен'},
                 status=status.HTTP_200_OK)
@@ -141,8 +141,8 @@ class PracticeLetterRequestView(views.APIView):
     """
 
     def post(self, request, format=None):
-        user = request.user.user
-        if user['user_type'] == 'student':
+        user = request.user
+        if user.user_type == 'student':
             serializer = PracticeLetterRequestSerializer(data=request.data, context={"user": user})
             if serializer.is_valid():
                 serializer.save()
@@ -160,8 +160,8 @@ class ExtraAgreementRequestView(views.APIView):
     """
 
     def get(self, request, format=None):
-        user = request.user.user
-        if user['user_type'] == 'student':
+        user = request.user
+        if user.user_type == 'student':
             return Response(
                 {'message': 'Данный вид услуги доступен только для студентов, обучающихся на платной договорной основе.'},
                 status=status.HTTP_200_OK)
@@ -177,8 +177,8 @@ class SendPaymentEduRequestView(views.APIView):
     """
 
     def get(self, request, format=None):
-        user = request.user.user
-        if user['user_type'] == 'student':
+        user = request.user
+        if user.user_type == 'student':
             return Response(
                 {'message': 'Данный вид услуги доступен только для студентов, обучающихся на платной договорной основе.'},
                 status=status.HTTP_200_OK)
@@ -194,8 +194,8 @@ class PrDonateRequestView(views.APIView):
     """
 
     def post(self, request, format=None):
-        user = request.user.user
-        if user['user_type'] == 'student':
+        user = request.user
+        if user.user_type == 'student':
             serializer = PrDonateRequestSerializer(data=request.data, context={"user": user})
             if serializer.is_valid():
                 serializer.save()
@@ -213,8 +213,8 @@ class MatHelpRequestView(views.APIView):
     """
 
     def post(self, request, format=None):
-        user = request.user.user
-        if user['user_type'] == 'student':
+        user = request.user
+        if user.user_type == 'student':
             serializer = MatHelpRequestSerializer(data=request.data, context={"user": user})
             if serializer.is_valid():
                 serializer.save()
@@ -232,8 +232,8 @@ class SocStipRequestView(views.APIView):
     """
 
     def post(self, request, format=None):
-        user = request.user.user
-        if user['user_type'] == 'student':
+        user = request.user
+        if user.user_type == 'student':
             serializer = SocStipRequestSerializer(data=request.data, context={"user": user})
             if serializer.is_valid():
                 serializer.save()
@@ -252,8 +252,8 @@ class ArmyRequestView(views.APIView):
     """
 
     def post(self, request, format=None):
-        user = request.user.user
-        if user['user_type'] == 'student':
+        user = request.user
+        if user.user_type == 'student':
             serializer = ArmyRequestSerializer(data=request.data, context={"user": user})
             if serializer.is_valid():
                 serializer.save()
@@ -271,8 +271,8 @@ class FreeRequestView(views.APIView):
     """
 
     def post(self, request, format=None):
-        user = request.user.user
-        if user['user_type'] == 'student':
+        user = request.user
+        if user.user_type == 'student':
             serializer = FreeRequestSerializer(data=request.data, context={"user": user})
             if serializer.is_valid():
                 serializer.save()
@@ -290,9 +290,9 @@ class RequestHistoryStudentView(views.APIView):
     """
 
     def get(self, request, format=None):
-        user = request.user.user
-        if user['user_type'] == 'student':
-            queryset = RequestStudent.objects.filter(user_uuid=user['id'])
+        user = request.user
+        if user.user_type == 'student':
+            queryset = RequestStudent.objects.filter(user_uuid=user.id)
             serializer = RequestHistoryStudentSerializer(queryset, many=True)
             return Response(serializer.data, status=status.HTTP_200_OK)
         return Response(
@@ -307,8 +307,8 @@ class AddressListViewSet(views.APIView):
     """
 
     def get(self, request, format=None):
-        user = request.user.user
-        if user['user_type'] == 'student':
+        user = request.user
+        if user.user_type == 'student':
             queryset = Address.objects.all()
             serializer = AddressSerializer(queryset, many=True)
             return Response(serializer.data, status=status.HTTP_200_OK)
@@ -323,8 +323,8 @@ class RequestTypeListViewSet(views.APIView):
     """
 
     def get(self, request, format=None):
-        user = request.user.user
-        if user['user_type'] == 'student':
+        user = request.user
+        if user.user_type == 'student':
             queryset = RequestStudent.objects.filter()
             serializer = RequestHistoryStudentSerializer(queryset, many=True)
             return Response(serializer.data, status=status.HTTP_200_OK)

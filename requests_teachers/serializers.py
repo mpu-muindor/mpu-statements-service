@@ -12,9 +12,7 @@ class ISandComputersSerializer(serializers.Serializer):
      - Вопрос по Личному кабинету
      - Прочее ИТ-обслуживание
     """
-    fio = serializers.CharField()
     structural_unit = serializers.CharField()
-    position = serializers.CharField()
     email = serializers.EmailField()
     work_phone = serializers.CharField(required=False, allow_null=True)
     mobile_phone = serializers.CharField()
@@ -26,11 +24,9 @@ class ISandComputersSerializer(serializers.Serializer):
 
     def save(self, **kwargs):
         user = self.context['user']
+        contacts = f'{user.name}, {self.validated_data.get("phone", user.phone)}, {self.validated_data.get("email", user.email)}'
 
-        name = f'{user["first_name"]} {user["last_name"]} {user.get("middle_name", "")}'
-        contacts = f'{name}, {self.validated_data.get("phone", user["phone"])}, {self.validated_data.get("email", user["email"])}'
-
-        text = f"Подразделение: {self.validated_data['structural_unit']}\nДолжность: Преподаватель\n," \
+        text = f"Подразделение: {self.validated_data['structural_unit']}\nДолжность: Преподаватель,\n" \
                f"Моб. телефон: {self.validated_data['mobile_phone']}\n" \
                f"Площадка: {dict(RequestTeacher.ADDRESSES).get(self.validated_data['work_address_corpus'])}\n" \
                f"Номер аудитории: {self.validated_data['work_address_room']}\n"
@@ -38,7 +34,7 @@ class ISandComputersSerializer(serializers.Serializer):
             text += f'Заявка:\n{self.validated_data["request_text"]}'
 
         RequestTeacher.objects.create(
-            user_uuid=user['id'],
+            user_uuid=user.id,
             contacts=contacts,
             request_title=self.validated_data['request_title'],
             request_text=text,
@@ -58,9 +54,7 @@ class WorkRequestsSerializer(serializers.Serializer):
      - Справка о работе на условиях внешнего совместительства для внесения стажа в трудовую книжку
      - Справка об отпуске по уходу за ребенком до 1,5 и 3 лет
     """
-    fio = serializers.CharField()
     structural_unit = serializers.CharField()
-    position = serializers.CharField()
     email = serializers.EmailField()
     work_phone = serializers.CharField(required=False, allow_null=True)
     mobile_phone = serializers.CharField()
@@ -93,7 +87,10 @@ class WorkRequestsSerializer(serializers.Serializer):
         return data
 
     def save(self, **kwargs):
-        text = f"Подразделение: {self.validated_data['structural_unit']}\nДолжность: \n," \
+        user = self.context['user']
+        contacts = f'{user.name}, {self.validated_data.get("phone", user.phone)}, {self.validated_data.get("email", user.email)}'
+
+        text = f"Подразделение: {self.validated_data['structural_unit']}\nДолжность: Преподаватель,\n" \
                f"Моб. телефон: {self.validated_data['mobile_phone']}\n" \
                f"Площадка: {dict(RequestTeacher.ADDRESSES).get(self.validated_data['work_address_corpus'])}\n" \
                f"Номер аудитории: {self.validated_data['work_address_room']}\n"
@@ -106,6 +103,8 @@ class WorkRequestsSerializer(serializers.Serializer):
         text += f'\nСпособ получения: {temp_way}'
 
         RequestTeacher.objects.create(
+            user_uuid=user.id,
+            contacts=contacts,
             request_title=self.validated_data['request_title'],
             request_text=text,
             responsible_unit=1,
@@ -119,9 +118,7 @@ class WorkPaymentsSerializer(serializers.Serializer):
      - Справка о выплате (не выплате) единовременного пособия на рождение ребенка
      - Справка о ежемесячных выплатах сотрудника, находящегося в отпуске по уходу за ребенком (декрет)
     """
-    fio = serializers.CharField()
     structural_unit = serializers.CharField()
-    position = serializers.CharField()
     email = serializers.EmailField()
     work_phone = serializers.CharField(required=False, allow_null=True)
     mobile_phone = serializers.CharField()
@@ -145,6 +142,7 @@ class WorkPaymentsSerializer(serializers.Serializer):
         (3, "МФЦ Павла Корчагина, д. 22, аудитория 213"),
         (4, "МФЦ Автозаводская, д. 16, аудитория 2315"),
         (5, "Отдел кадров"),
+        (6, "Бухгалтерия"),
     )
     place_to_get = serializers.ChoiceField(choices=PLACES_TO_GET, required=False)
 
@@ -184,10 +182,9 @@ class WorkPaymentsSerializer(serializers.Serializer):
 
     def save(self, **kwargs):
         user = self.context['user']
-        name = f'{user["first_name"]} {user["last_name"]} {user.get("middle_name", "")}'
-        contacts = f'{name}, {user["phone"]}, {user["email"]}'
+        contacts = f'{user.name}, {self.validated_data.get("phone", user.phone)}, {self.validated_data.get("email", user.email)}'
 
-        text = f"Подразделение: {self.validated_data['structural_unit']}\nДолжность: \n," \
+        text = f"Подразделение: {self.validated_data['structural_unit']}\nДолжность: Преподаватель,\n" \
                f"Моб. телефон: {self.validated_data['mobile_phone']}\n" \
                f"Площадка: {dict(RequestTeacher.ADDRESSES).get(self.validated_data['work_address_corpus'])}\n" \
                f"Номер аудитории: {self.validated_data['work_address_room']}\n"
@@ -202,6 +199,8 @@ class WorkPaymentsSerializer(serializers.Serializer):
             text += f'\nКоличество копий: {self.validated_data["copies_number"]}'
 
         RequestTeacher.objects.create(
+            user_uuid=user.id,
+            contacts=contacts,
             request_title=self.validated_data['request_title'],
             request_text=text,
             responsible_unit=1,

@@ -62,7 +62,6 @@ INSTALLED_APPS = [
     'requests_teachers',
     # Сторонние приложения
     'rest_framework',
-    'rest_framework.authtoken',
 ]
 
 MIDDLEWARE = [
@@ -141,10 +140,7 @@ USE_TZ = False  # For DRF
 REST_FRAMEWORK = {
     'DATE_INPUT_FORMATS': ["%d.%m.%Y"],
     'DEFAULT_AUTHENTICATION_CLASSES': (
-        # 'rest_framework.authentication.BasicAuthentication',
-        # 'rest_framework_simplejwt.authentication.JWTAuthentication',
-        # 'rest_framework.authentication.TokenAuthentication',
-        'requests_students.authentication.ExampleAuthentication',  # custom authentication class
+        'requests_students.authentication.CustomJWTAuthentication',  # custom authentication class
     ),
     'DEFAULT_PERMISSION_CLASSES': (
         'rest_framework.permissions.IsAuthenticated',

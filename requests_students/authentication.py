@@ -8,17 +8,30 @@ import requests
 
 class User:
     def __init__(self, jwt_user):
-        self.user = jwt_user
+        self.full_user = jwt_user
+
+        self.id = jwt_user.get('id')
+        self.name = f'{jwt_user["first_name"]} {jwt_user["last_name"]}'
+        if jwt_user.get("middle_name") is not None:
+            self.name += f' {jwt_user.get("middle_name")}'
+        self.birthday = jwt_user.get('birthday')
+        self.login = jwt_user.get('login')
+        self.email = jwt_user.get('email')
+        self.phone = jwt_user.get('phone')
+        self.about = jwt_user.get('about')
+        self.user_type = jwt_user.get('user_type')
+
         self.is_authenticated = True
 
 
-class ExampleAuthentication(authentication.BaseAuthentication):
+class CustomJWTAuthentication(authentication.BaseAuthentication):
     def authenticate(self, request):
         token = request.headers.get('Authorization')
         if not token:
             raise exceptions.AuthenticationFailed('No token')
         else:
-            token = token.split(' ')[1]
+            if 'bearer' in token.lower():
+                token = token.split(' ')[1]
 
         key = settings.SECRET_JWT
 
@@ -38,16 +51,17 @@ class ExampleAuthentication(authentication.BaseAuthentication):
         except jws.exceptions.SignatureError:
             raise exceptions.ValidationError('Wrong token')
 
-        if payload.get("user_type") == 'student':
-            url = 'https://auth.6an.ru/api/user/student'
-        else:
-            url = 'https://auth.6an.ru/api/user/professor'
-        r = requests.post(
-            url=url,
-            headers={'Authorization': 'Bearer ' + token}
-        )
+        # if payload.get("user_type") == 'student':
+        #     url = 'https://auth.6an.ru/api/user/student'
+        # else:
+        #     url = 'https://auth.6an.ru/api/user/professor'
+        # r = requests.post(
+        #     url=url,
+        #     headers={'Authorization': 'Bearer ' + token}
+        # )
+        #
+        # full_user = r.json()
 
-        full_user = r.json()
+        user = User(jwt_user=payload)
 
-        user = User(jwt_user=full_user)
         return user, None  # authentication successful

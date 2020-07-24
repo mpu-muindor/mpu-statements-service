@@ -16,8 +16,8 @@ class ISSandComputerView(views.APIView):
     """
 
     def post(self, request, format=None):
-        user = request.user.user
-        if user['user_type'] == 'professor':
+        user = request.user
+        if user.user_type == 'professor':
             serializer = ISandComputersSerializer(data=request.data, context={"user": user})
             if serializer.is_valid():
                 serializer.save()
@@ -43,8 +43,8 @@ class WorkRequestsView(views.APIView):
     """
 
     def post(self, request, format=None):
-        user = request.user.user
-        if user['user_type'] == 'professor':
+        user = request.user
+        if user.user_type == 'professor':
             serializer = WorkRequestsSerializer(data=request.data, context={"user": user})
             if serializer.is_valid():
                 serializer.save()
@@ -64,8 +64,8 @@ class WorkPaymentsView(views.APIView):
     """
 
     def post(self, request, format=None):
-        user = request.user.user
-        if user['user_type'] == 'professor':
+        user = request.user
+        if user.user_type == 'professor':
             serializer = WorkPaymentsSerializer(data=request.data, context={"user": user})
             if serializer.is_valid():
                 serializer.save()
@@ -83,9 +83,9 @@ class RequestHistoryTeacherView(views.APIView):
     """
 
     def get(self, request, format=None):
-        user = request.user.user
-        if user['user_type'] == 'professor':
-            queryset = RequestTeacher.objects.filter(user_uuid=user['id'])
+        user = request.user
+        if user.user_type == 'professor':
+            queryset = RequestTeacher.objects.filter(user_uuid=user.id)
             serializer = RequestHistoryTeacherSerializer(queryset, many=True)
             return Response(serializer.data, status=status.HTTP_200_OK)
         return Response(
