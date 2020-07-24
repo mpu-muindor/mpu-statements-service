@@ -26,7 +26,7 @@ SECRET_JWT = 'SECRET'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['mpu-statements-service.herokuapp.com', '127.0.0.1']
+ALLOWED_HOSTS = ['*']
 
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 MEDIA_URL = '/media/'  # URL для медии в шаблонах
