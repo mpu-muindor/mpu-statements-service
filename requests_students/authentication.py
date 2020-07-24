@@ -3,7 +3,6 @@ from rest_framework import exceptions
 import jwt
 import jws
 from django.conf import settings
-import requests
 
 
 class User:
@@ -37,7 +36,7 @@ class CustomJWTAuthentication(authentication.BaseAuthentication):
 
         try:
             payload = jwt.decode(jwt=token, key=key, algorithms=['HS256'])
-        except:
+        except jwt.exceptions.InvalidSignatureError:
             raise exceptions.ValidationError('Signature verification failed')
 
         header = {
@@ -48,7 +47,7 @@ class CustomJWTAuthentication(authentication.BaseAuthentication):
 
         try:
             jws.verify(header, payload, signature, key)
-        except:
+        except jws.exceptions.SignatureError:
             raise exceptions.ValidationError('Wrong token')
 
         user = User(jwt_user=payload)
