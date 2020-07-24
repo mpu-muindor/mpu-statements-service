@@ -37,7 +37,7 @@ class CustomJWTAuthentication(authentication.BaseAuthentication):
 
         try:
             payload = jwt.decode(jwt=token, key=key, algorithms=['HS256'])
-        except jwt.exceptions.InvalidSignatureError:
+        except:
             raise exceptions.ValidationError('Signature verification failed')
 
         header = {
@@ -48,19 +48,8 @@ class CustomJWTAuthentication(authentication.BaseAuthentication):
 
         try:
             jws.verify(header, payload, signature, key)
-        except jws.exceptions.SignatureError:
+        except:
             raise exceptions.ValidationError('Wrong token')
-
-        # if payload.get("user_type") == 'student':
-        #     url = 'https://auth.6an.ru/api/user/student'
-        # else:
-        #     url = 'https://auth.6an.ru/api/user/professor'
-        # r = requests.post(
-        #     url=url,
-        #     headers={'Authorization': 'Bearer ' + token}
-        # )
-        #
-        # full_user = r.json()
 
         user = User(jwt_user=payload)
 
