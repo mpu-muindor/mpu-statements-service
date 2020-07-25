@@ -3,6 +3,7 @@ from rest_framework import exceptions
 import jwt
 import jws
 from django.conf import settings
+import requests
 
 
 class User:
@@ -34,22 +35,30 @@ class CustomJWTAuthentication(authentication.BaseAuthentication):
 
         key = settings.SECRET_JWT
 
-        try:
-            payload = jwt.decode(jwt=token, key=key, algorithms=['HS256'])
-        except jwt.exceptions.InvalidSignatureError:
-            raise exceptions.ValidationError('Signature verification failed')
+        api_token = settings.API_TOKEN
 
-        header = {
-            "alg": "HS256",
-            "typ": "JWT"
-        }
-        signature = jws.sign(header, payload, key)
+        verification = requests.post(
+            url='https://auth.6an.ru/api/service/verify-token',
+            params={
+                'jwt': token,
+                'api_token': api_token,
+            },
+        )
 
-        try:
-            jws.verify(header, payload, signature, key)
-        except jws.exceptions.SignatureError:
-            raise exceptions.ValidationError('Wrong token')
+        result = verification.json().get('result')
 
-        user = User(jwt_user=payload)
+        if result:
+            try:
+                payload = jwt.decode(jwt=token, key=key, algorithms=['HS256'])
+            except jwt.exceptions.InvalidSignatureError:
+                raise exceptions.ValidationError({
+                    'message': 'Signature verification failed'
+                })
 
-        return user, None  # authentication successful
+            user = User(jwt_user=payload)
+
+            return user, None  # authentication successful
+
+        raise exceptions.ValidationError({
+            'message': 'Wrong token'
+        })

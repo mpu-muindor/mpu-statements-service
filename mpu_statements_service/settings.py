@@ -23,6 +23,8 @@ SECRET_KEY = 'c-u=0mxq5#z_q_-0_j3g0ufi66&d9$3coorkb7qp*g8tcg6_$v'
 
 SECRET_JWT = 'SECRET'
 
+API_TOKEN = '9OCxqdnEqzbupXRXFLLP4PmoyOrJvQJJn3CB8pro8oDkoMFj'
+
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
