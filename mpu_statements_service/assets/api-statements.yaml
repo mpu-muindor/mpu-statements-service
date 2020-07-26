@@ -5,7 +5,7 @@ info:
   title: MPU Statements Service
   license:
     name: MIT
-host: 'mpu-statements-service.herokuapp.com/'
+host: 'localhost/'
 basePath: statements
 tags:
   - name: admin

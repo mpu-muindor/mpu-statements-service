@@ -1,10 +1,29 @@
 version: '3.8'
 
 services:
-  web:
-    build: .
-    command: python manage.py runserver 0.0.0.0:8000
-    volumes:
-      - .:/mpu-statements-service
-    ports:
-      - 8000:8000
+    nginx:
+        restart: always
+        image: nginx:latest
+        expose:
+          - 8080
+        ports:
+          - "80:8080"
+        volumes:
+            - ./mpu_statements_service/static:/srv/www/mpu_statements_service/static
+            - ./mpu_statements_service/media:/srv/www/mpu_statements_service/media
+            - ./mpu_statements_service/logs:/srv/www/mpu_statements_service/logs
+            - ./docker/nginx:/etc/nginx/conf.d
+        depends_on:
+            - python
+    python:
+        restart: always
+        build:
+            context: .
+            dockerfile: docker/python/Dockerfile
+        volumes:
+            - ./mpu_statements_service:/srv/www/mpu_statements_service
+        expose:
+          - 8000
+        ports:
+            - 8000:8000
+        command: "python /srv/www/mpu_statements_service/manage.py runserver 0.0.0.0:8000"
