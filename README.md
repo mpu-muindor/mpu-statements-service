@@ -9,3 +9,11 @@ cd mpu-statements-service
 pip install -r requirements.txt
 python manage.py runserver
 ```
+
+или
+
+```
+cd mpu-statements-service
+docker-compose build
+docker-compose up -d
+```
