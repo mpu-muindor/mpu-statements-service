@@ -25,10 +25,14 @@ SECRET_JWT = 'SECRET'
 
 API_TOKEN = '9OCxqdnEqzbupXRXFLLP4PmoyOrJvQJJn3CB8pro8oDkoMFj'
 
+
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['*']
+
+ALLOWED_HOSTS = ['statements.6an.ru', 'mpu-statements-service.herokuapp.com',
+                 '127.0.0.1', 'localhost']
+
 
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 MEDIA_URL = '/media/'  # URL для медии в шаблонах
@@ -62,6 +66,7 @@ INSTALLED_APPS = [
     # Приложения проекта
     'requests_students',
     'requests_teachers',
+    'authentication',
     # Сторонние приложения
     'rest_framework',
 ]
@@ -142,7 +147,7 @@ USE_TZ = False  # For DRF
 REST_FRAMEWORK = {
     'DATE_INPUT_FORMATS': ["%d.%m.%Y"],
     'DEFAULT_AUTHENTICATION_CLASSES': (
-        'requests_students.authentication.CustomJWTAuthentication',  # custom authentication class
+        'authentication.authentication.CustomJWTAuthentication',  # custom authentication class
     ),
     'DEFAULT_PERMISSION_CLASSES': (
         'rest_framework.permissions.IsAuthenticated',
