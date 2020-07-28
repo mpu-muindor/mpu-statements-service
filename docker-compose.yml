@@ -7,7 +7,7 @@ services:
         expose:
           - 8080
         ports:
-          - "80:8080"
+          - "1234:8080"
         volumes:
             - ./mpu_statements_service/static:/srv/www/mpu_statements_service/static
             - ./mpu_statements_service/media:/srv/www/mpu_statements_service/media
