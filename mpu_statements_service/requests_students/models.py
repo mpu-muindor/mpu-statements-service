@@ -42,7 +42,6 @@ class RequestStudent(models.Model):
         (status_done, "Готово"),
     )
 
-    # TODO: add user info (name, group, phone, email, etc...)
     user_uuid = models.UUIDField(verbose_name='UUID пользователя')
     contacts = models.CharField(max_length=1000, verbose_name='Контактные данные')
     datetime = models.DateTimeField(verbose_name="Дата, время", auto_now_add=True)

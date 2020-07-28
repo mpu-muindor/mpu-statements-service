@@ -5,8 +5,9 @@ info:
   title: MPU Statements Service
   license:
     name: MIT
-host: 'localhost/'
-basePath: statements
+schemes:
+  - https
+host: 'statements.6an.ru/'
 tags:
   - name: admin
     description: Админка сервиса. Логин/пароль — admin/admin
@@ -19,6 +20,8 @@ securityDefinitions:
     type: apiKey
     name: Authorization
     in: header
+security:
+  - Bearer: []
 paths:
   /student/requests/:
     get:
@@ -31,8 +34,6 @@ paths:
       produces:
         - application/json
       parameters: []
-      security:
-        - Bearer: []
       responses:
         '200':
           description: История всех запросов пользователя
@@ -49,8 +50,6 @@ paths:
       produces:
         - application/json
       parameters: []
-      security:
-        - Bearer: []
       responses:
         '200':
           description: Список всех адресов с названиями и id
@@ -67,8 +66,6 @@ paths:
       produces:
         - application/json
       parameters: []
-      security:
-        - Bearer: []
       responses:
         '200':
           description: Список всех типов с названиями и id
@@ -169,8 +166,6 @@ paths:
           description: Комментарий пользователя
           type: string
           nullable: true
-      security:
-        - Bearer: []
       responses:
         '201':
           description: Текст справки создан
@@ -215,8 +210,6 @@ paths:
           description: Комментарий пользователя
           type: string
           nullable: true
-      security:
-        - Bearer: []
       responses:
         '201':
           description: Текст справки создан
@@ -270,8 +263,6 @@ paths:
           description: Комментарий пользователя
           type: string
           nullable: true
-      security:
-        - Bearer: []
       responses:
         '201':
           description: Текст справки создан
@@ -320,8 +311,6 @@ paths:
           description: Комментарий пользователя
           type: string
           nullable: true
-      security:
-        - Bearer: []
       responses:
         '201':
           description: Текст справки создан
@@ -366,8 +355,6 @@ paths:
             только jpg и pdf.
           required: true
           type: file
-      security:
-        - Bearer: []
       responses:
         '201':
           description: Текст справки создан
@@ -400,8 +387,6 @@ paths:
           in: formData
           description: Причина восстановления пропуска
           type: string
-      security:
-        - Bearer: []
       responses:
         '201':
           description: Текст справки создан
@@ -482,8 +467,6 @@ paths:
           description: Должность руководителя организации для прохождения практики
           required: true
           type: string
-      security:
-        - Bearer: []
       responses:
         '201':
           description: Текст справки создан
@@ -585,8 +568,6 @@ paths:
             jpg и pdf.
           required: true
           type: file
-      security:
-        - Bearer: []
       responses:
         '201':
           description: Текст справки создан
@@ -744,8 +725,6 @@ paths:
             идее только jpg и pdf.
           required: true
           type: file
-      security:
-        - Bearer: []
       responses:
         '201':
           description: Текст справки создан
@@ -818,8 +797,6 @@ paths:
             По идее только jpg и pdf.
           required: true
           type: file
-      security:
-        - Bearer: []
       responses:
         '201':
           description: Текст справки создан
@@ -938,8 +915,6 @@ paths:
           description: Адрес временной регистрации
           nullable: true
           type: string
-      security:
-        - Bearer: []
       responses:
         '201':
           description: Текст справки создан
@@ -992,8 +967,6 @@ paths:
           description: Присоединить файл (при необходимости). По идее только jpg и pdf.
           type: file
           nullable: true
-      security:
-        - Bearer: []
       responses:
         '201':
           description: Текст справки создан
@@ -1010,8 +983,6 @@ paths:
       produces:
         - application/json
       parameters: []
-      security:
-        - Bearer: []
       responses:
         '200':
           description: История всех запросов преподавателя
@@ -1102,8 +1073,6 @@ paths:
           description: Присоединить файл (при необходимости)
           type: file
           nullable: true
-      security:
-        - Bearer: []
       responses:
         '201':
           description: Текст справки создан
@@ -1192,8 +1161,6 @@ paths:
           description: Присоединить файл (при необходимости)
           type: file
           nullable: true
-      security:
-        - Bearer: []
       responses:
         '201':
           description: Текст справки создан
@@ -1282,8 +1249,6 @@ paths:
           description: Присоединить файл (при необходимости)
           type: file
           nullable: true
-      security:
-        - Bearer: []
       responses:
         '201':
           description: Текст справки создан
@@ -1372,8 +1337,6 @@ paths:
           description: Присоединить файл (при необходимости)
           type: file
           nullable: true
-      security:
-        - Bearer: []
       responses:
         '201':
           description: Текст справки создан
@@ -1462,8 +1425,6 @@ paths:
           description: Присоединить файл (при необходимости)
           type: file
           nullable: true
-      security:
-        - Bearer: []
       responses:
         '201':
           description: Текст справки создан
@@ -1552,8 +1513,6 @@ paths:
           description: Присоединить файл (при необходимости)
           type: file
           nullable: true
-      security:
-        - Bearer: []
       responses:
         '201':
           description: Текст справки создан
@@ -1675,8 +1634,6 @@ paths:
               - 4
               - 5
               - 6
-      security:
-        - Bearer: []
       responses:
         '201':
           description: Текст справки создан
@@ -1798,8 +1755,6 @@ paths:
               - 4
               - 5
               - 6
-      security:
-        - Bearer: []
       responses:
         '201':
           description: Текст справки создан
@@ -1921,8 +1876,6 @@ paths:
               - 4
               - 5
               - 6
-      security:
-        - Bearer: []
       responses:
         '201':
           description: Текст справки создан
@@ -2044,8 +1997,6 @@ paths:
               - 4
               - 5
               - 6
-      security:
-        - Bearer: []
       responses:
         '201':
           description: Текст справки создан
@@ -2167,8 +2118,6 @@ paths:
               - 4
               - 5
               - 6
-      security:
-        - Bearer: []
       responses:
         '201':
           description: Текст справки создан
@@ -2290,8 +2239,6 @@ paths:
               - 4
               - 5
               - 6
-      security:
-        - Bearer: []
       responses:
         '201':
           description: Текст справки создан
@@ -2418,8 +2365,6 @@ paths:
               - 4
               - 5
               - 6
-      security:
-        - Bearer: []
       responses:
         '201':
           description: Текст справки создан
@@ -2561,8 +2506,6 @@ paths:
               - 4
               - 5
               - 6
-      security:
-        - Bearer: []
       responses:
         '201':
           description: Текст справки создан
@@ -2709,8 +2652,6 @@ paths:
               - 4
               - 5
               - 6
-      security:
-        - Bearer: []
       responses:
         '201':
           description: Текст справки создан
@@ -2852,8 +2793,6 @@ paths:
               - 4
               - 5
               - 6
-      security:
-        - Bearer: []
       responses:
         '201':
           description: Текст справки создан
@@ -2999,8 +2938,6 @@ paths:
               - 4
               - 5
               - 6
-      security:
-        - Bearer: []
       responses:
         '201':
           description: Текст справки создан
