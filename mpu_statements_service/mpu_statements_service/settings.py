@@ -11,6 +11,11 @@ https://docs.djangoproject.com/en/3.0/ref/settings/
 """
 
 import os
+import environ
+
+env = environ.Env()
+environ.Env.read_env()  # reading .env file
+
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -18,41 +23,22 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/3.0/howto/deployment/checklist/
 
+
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'c-u=0mxq5#z_q_-0_j3g0ufi66&d9$3coorkb7qp*g8tcg6_$v'
+SECRET_KEY = env.str('SECRET_KEY')
 
-SECRET_JWT = 'SECRET'
+SECRET_JWT = env.str('SECRET_JWT')
 
-API_TOKEN = '9OCxqdnEqzbupXRXFLLP4PmoyOrJvQJJn3CB8pro8oDkoMFj'
+API_TOKEN = env.str('API_TOKEN')
 
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = True  # env.bool('DEBUG', default=True)
 
 
 ALLOWED_HOSTS = ['statements.6an.ru', 'mpu-statements-service.herokuapp.com',
                  '127.0.0.1', 'localhost']
 
-
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
-MEDIA_URL = '/media/'  # URL для медии в шаблонах
-
-# Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/3.0/howto/static-files/
-
-STATIC_ROOT = os.path.join(BASE_DIR, 'static')  # пустая папка, сюда будет собирать статику collectstatic
-STATIC_URL = '/static/'  # URL для шаблонов
-STATICFILES_DIRS = (
-    os.path.join(BASE_DIR, 'assets'),
-)
-
-# "Поисковики" статики. Первый ищет статику в STATICFILES_DIRS,
-# второй в папках приложений.
-
-STATICFILES_FINDERS = (
-    'django.contrib.staticfiles.finders.FileSystemFinder',
-    'django.contrib.staticfiles.finders.AppDirectoriesFinder',
-)
 
 # Application definition
 
@@ -63,12 +49,12 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    # Приложения проекта
-    'requests_students',
-    'requests_teachers',
-    'authentication',
     # Сторонние приложения
     'rest_framework',
+    # Приложения проекта
+    'apps.requests_students',
+    'apps.requests_teachers',
+    'apps.authentication',
 ]
 
 MIDDLEWARE = [
@@ -147,7 +133,7 @@ USE_TZ = False  # For DRF
 REST_FRAMEWORK = {
     'DATE_INPUT_FORMATS': ["%d.%m.%Y"],
     'DEFAULT_AUTHENTICATION_CLASSES': (
-        'authentication.authentication.CustomJWTAuthentication',  # custom authentication class
+        'apps.authentication.authentication.CustomJWTAuthentication',  # custom authentication class
     ),
     'DEFAULT_PERMISSION_CLASSES': (
         'rest_framework.permissions.IsAuthenticated',
@@ -157,6 +143,26 @@ REST_FRAMEWORK = {
 # Simplified static file serving.
 # https://warehouse.python.org/project/whitenoise/
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+
+# Static files (CSS, JavaScript, Images)
+# https://docs.djangoproject.com/en/3.0/howto/static-files/
+
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+MEDIA_URL = '/media/'  # URL для медии в шаблонах
+
+STATIC_ROOT = os.path.join(BASE_DIR, 'static')  # пустая папка, сюда будет собирать статику collectstatic
+STATIC_URL = '/static/'  # URL для шаблонов
+STATICFILES_DIRS = (
+    os.path.join(BASE_DIR, 'assets'),
+)
+
+# "Поисковики" статики. Первый ищет статику в STATICFILES_DIRS,
+# второй в папках приложений.
+
+STATICFILES_FINDERS = (
+    'django.contrib.staticfiles.finders.FileSystemFinder',
+    'django.contrib.staticfiles.finders.AppDirectoriesFinder',
+)
 
 # Heroku: Update database configuration from $DATABASE_URL.
 import dj_database_url

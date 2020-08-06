@@ -1,7 +1,7 @@
 from rest_framework import status, views
 from rest_framework.response import Response
 
-from requests_teachers.serializers import *
+from .serializers import *
 
 
 class ISSandComputerView(views.APIView):

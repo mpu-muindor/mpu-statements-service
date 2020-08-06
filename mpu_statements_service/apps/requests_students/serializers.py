@@ -1,5 +1,6 @@
+from django.db.utils import OperationalError
 from rest_framework import serializers
-from requests_students.models import Address, RequestStudentType, RequestStudent
+from .models import Address, RequestStudentType, RequestStudent
 
 
 def create_addresses():
@@ -22,10 +23,9 @@ def create_addresses():
         Address.objects.get_or_create(name=address)
 
 
-# TODO: good validation
 try:
     create_addresses()
-except:
+except OperationalError:
     pass
 
 
@@ -36,12 +36,12 @@ def get_addresses(filter_name=None):
     if filter_name:
         try:
             addresses = list(Address.objects.filter(name__contains=filter_name))
-        except:
+        except OperationalError:
             addresses = list()
     else:
         try:
             addresses = list(Address.objects.all())
-        except:
+        except OperationalError:
             addresses = list()
     choices = tuple(
         (a.id, a.name) for a in addresses
@@ -72,19 +72,37 @@ def get_default_address(name=None):
         obj, _ = Address.objects.get_or_create(name=name)
     else:
         # Подразумевается ЦРС На Большой Семёновской
-        obj, _ = Address.objects.get_or_create(name="Отделение «На Большой Семеновской» центра по работе со "
-                                                    "студентами Ул. Большая Семеновская, 38; ауд. В-107. Тел. (495) "
-                                                    "223-05-23 (доб. 1375, 1215, 1105) ; crs-bs@mospolytech.ru")
+        obj, _ = Address.objects.get_or_create(
+            name="Отделение «На Большой Семеновской» центра по работе со "
+                 "студентами Ул. Большая Семеновская, 38; ауд. В-107. Тел. (495) "
+                 "223-05-23 (доб. 1375, 1215, 1105) ; crs-bs@mospolytech.ru"
+        )
     return obj
 
 
-class EdRequestSerializer(serializers.Serializer):
+def get_contacts(user, validated_data):
+    contacts = f'{user.name}, {validated_data.get("phone", user.phone)},' \
+               f' {validated_data.get("email", user.email)}'
+    return user, contacts
+
+
+class BaseSerializerStudent(serializers.Serializer):
+    """
+    Базовай класс сериалайзера, содержащий поля phone, email, user_comment,
+    котоые есть во всех справках
+    """
+    phone = serializers.CharField(max_length=18)
+    email = serializers.EmailField()
+    user_comment = serializers.CharField(required=False, allow_null=True)
+
+    def save(self, **kwargs):
+        self.user, self.contacts = get_contacts(self.context['user'], self.validated_data)
+
+
+class EdRequestSerializerStudent(BaseSerializerStudent):
     """
     Справка о прослушанных дисциплинах за период обучения (справка об обучении)
     """
-
-    phone = serializers.CharField(max_length=18)
-    email = serializers.EmailField()
     radio1 = serializers.NullBooleanField(required=False)
     radio2 = serializers.NullBooleanField(required=False)
     university_out = serializers.CharField(required=False, allow_null=True)
@@ -101,13 +119,10 @@ class EdRequestSerializer(serializers.Serializer):
     previous_doc = serializers.ChoiceField(choices=DOC_TYPE)
     university_in = serializers.CharField()
     year_in = serializers.CharField()
-    user_comment = serializers.CharField(required=False, allow_null=True)
 
     def save(self, **kwargs):
         # Retrieve user
-        user = self.context['user']
-        contacts = f'{user.name}, {self.validated_data.get("phone", user.phone)}, {self.validated_data.get("email", user.email)}'
-
+        super(EdRequestSerializerStudent, self).save()
         group_id = '171-371'
 
         # Request text formatting
@@ -128,8 +143,8 @@ class EdRequestSerializer(serializers.Serializer):
 
         # Create request
         RequestStudent.objects.create(
-            user_uuid=user.id,
-            contacts=contacts,
+            user_uuid=self.user.id,
+            contacts=self.contacts,
             reg_number=f"ED{num}",
             request_title=obj,
             request_text=text,
@@ -137,20 +152,15 @@ class EdRequestSerializer(serializers.Serializer):
         )
 
 
-class StatusRequestSerializer(serializers.Serializer):
+class StatusRequestSerializerStudent(BaseSerializerStudent):
     """
     Справка о прохождении обучения в университете (о статусе обучающегося) по месту требования
     """
-
-    phone = serializers.CharField(max_length=18)
-    email = serializers.EmailField()
     address = serializers.ChoiceField(choices=get_addresses("центра по работе со студентами"))
     to_whom = serializers.CharField(max_length=500)
-    user_comment = serializers.CharField(required=False, allow_null=True)
 
     def save(self, **kwargs):
-        user = self.context['user']
-        contacts = f'{user.name}, {self.validated_data.get("phone", user.phone)}, {self.validated_data.get("email", user.email)}'
+        super(StatusRequestSerializerStudent, self).save()
 
         text = f'Дана для предоставления {self.validated_data["to_whom"]}.'
         if self.validated_data.get("user_comment"):
@@ -160,8 +170,8 @@ class StatusRequestSerializer(serializers.Serializer):
         obj, num = get_request_type_and_num(request_name)
 
         RequestStudent.objects.create(
-            user_uuid=user.id,
-            contacts=contacts,
+            user_uuid=self.user.id,
+            contacts=self.contacts,
             reg_number=f"SR{num}",
             request_title=obj,
             request_text=text,
@@ -169,22 +179,17 @@ class StatusRequestSerializer(serializers.Serializer):
         )
 
 
-class SobesRequestSerializer(serializers.Serializer):
+class SobesRequestSerializerStudent(BaseSerializerStudent):
     """
     Справка в социальные учреждения (Пенсионный фонд, УСЗН и пр.)
     """
-
-    phone = serializers.CharField(max_length=18)
-    email = serializers.EmailField()
     address = serializers.ChoiceField(choices=get_addresses("центра по работе со студентами"))
     order_num = serializers.CharField()
     order_date = serializers.CharField()
     to_whom = serializers.CharField(max_length=500)
-    user_comment = serializers.CharField(required=False, allow_null=True)
 
     def save(self, **kwargs):
-        user = self.context['user']
-        contacts = f'{user.name}, {self.validated_data.get("phone", user.phone)}, {self.validated_data.get("email", user.email)}'
+        super(SobesRequestSerializerStudent, self).save()
 
         text = f'Зачислена(а) по приказу от {self.validated_data["order_date"]} {self.validated_data["order_num"]}. ' + \
                f'Дана для предоставления {self.validated_data["to_whom"]}.'
@@ -195,8 +200,8 @@ class SobesRequestSerializer(serializers.Serializer):
         obj, num = get_request_type_and_num(request_name)
 
         RequestStudent.objects.create(
-            user_uuid=user.id,
-            contacts=contacts,
+            user_uuid=self.user.id,
+            contacts=self.contacts,
             reg_number=f"SC{num}",
             request_title=obj,
             request_text=text,
@@ -204,20 +209,15 @@ class SobesRequestSerializer(serializers.Serializer):
         )
 
 
-class CallRequestSerializer(serializers.Serializer):
+class CallRequestSerializerStudent(BaseSerializerStudent):
     """
     Справка-вызов
     """
-
-    phone = serializers.CharField(max_length=18)
-    email = serializers.EmailField()
     date_from = serializers.DateField(format="%d.%m.%Y")
     date_to = serializers.DateField(format="%d.%m.%Y")
-    user_comment = serializers.CharField(required=False, allow_null=True)
 
     def save(self, **kwargs):
-        user = self.context['user']
-        contacts = f'{user.name}, {self.validated_data.get("phone", user.phone)}, {self.validated_data.get("email", user.email)}'
+        super(CallRequestSerializerStudent, self).save()
 
         date_from = self.validated_data["date_from"].strftime("%d.%m.%Y")
         date_to = self.validated_data["date_to"].strftime("%d.%m.%Y")
@@ -230,8 +230,8 @@ class CallRequestSerializer(serializers.Serializer):
         obj, num = get_request_type_and_num(request_name)
 
         RequestStudent.objects.create(
-            user_uuid=user.id,
-            contacts=contacts,
+            user_uuid=self.user.id,
+            contacts=self.contacts,
             reg_number=f"SPV{num}",
             request_title=obj,
             request_text=text,
@@ -239,19 +239,16 @@ class CallRequestSerializer(serializers.Serializer):
         )
 
 
-class PersDataRequestSerializer(serializers.Serializer):
+class PersDataRequestSerializerStudent(BaseSerializerStudent):
     """
     Запрос на изменение персональных данных
     """
-    phone = serializers.CharField(max_length=18)
-    email = serializers.EmailField()
     first_last_name = serializers.CharField(max_length=500)
     reason = serializers.CharField(max_length=500)
     docs = serializers.FileField()
 
     def save(self, **kwargs):
-        user = self.context['user']
-        contacts = f'{user.name}, {self.validated_data.get("phone", user.phone)}, {self.validated_data.get("email", user.email)}'
+        super(PersDataRequestSerializerStudent, self).save()
 
         text = f'Прошу внести изменения в мои персональные данные и в дальнейшем именовать меня ' + \
                f'{self.validated_data["first_last_name"]} в связи с {self.validated_data["reason"]}'
@@ -260,8 +257,8 @@ class PersDataRequestSerializer(serializers.Serializer):
         obj, num = get_request_type_and_num(request_name)
 
         RequestStudent.objects.create(
-            user_uuid=user.id,
-            contacts=contacts,
+            user_uuid=self.user.id,
+            contacts=self.contacts,
             reg_number=f"PD{num}",
             request_title=obj,
             request_text=text,
@@ -269,17 +266,14 @@ class PersDataRequestSerializer(serializers.Serializer):
         )
 
 
-class PassRestoreRequestSerializer(serializers.Serializer):
+class PassRestoreRequestSerializerStudent(BaseSerializerStudent):
     """
     Запрос на восстановление магнитного пропуска
     """
-    phone = serializers.CharField(max_length=18)
-    email = serializers.EmailField()
     reason = serializers.CharField(max_length=500)
 
     def save(self, **kwargs):
-        user = self.context['user']
-        contacts = f'{user.name}, {self.validated_data.get("phone", user.phone)}, {self.validated_data.get("email", user.email)}'
+        super(PassRestoreRequestSerializerStudent, self).save()
 
         text = f'Прошу восстановить мой магнитный пропуск в связи с {self.validated_data["reason"]}'
 
@@ -287,8 +281,8 @@ class PassRestoreRequestSerializer(serializers.Serializer):
         obj, num = get_request_type_and_num(request_name)
 
         RequestStudent.objects.create(
-            user_uuid=user.id,
-            contacts=contacts,
+            user_uuid=self.user.id,
+            contacts=self.contacts,
             reg_number=f"RP{num}",
             request_title=obj,
             request_text=text,
@@ -296,19 +290,17 @@ class PassRestoreRequestSerializer(serializers.Serializer):
         )
 
 
-class PracticeSelectRequestSerializer(serializers.Serializer):
+class PracticeSelectRequestSerializerStudent(BaseSerializerStudent):
     """
     Выбор места практики
     """
     pass
 
 
-class PracticeLetterRequestSerializer(serializers.Serializer):
+class PracticeLetterRequestSerializerStudent(BaseSerializerStudent):
     """
     Заказ сопроводительного письма на прохождение практики
     """
-    phone = serializers.CharField(max_length=18)
-    email = serializers.EmailField()
     PRACTICE_TYPES = (
         (1, "учебная"),
         (2, "производственная"),
@@ -323,17 +315,16 @@ class PracticeLetterRequestSerializer(serializers.Serializer):
     organization_head = serializers.CharField(max_length=300)
 
     def save(self, **kwargs):
-        user = self.context['user']
-        contacts = f'{user.name}, {self.validated_data.get("phone", user.phone)}, {self.validated_data.get("email", user.email)}'
+        super(PracticeLetterRequestSerializerStudent, self).save()
 
         group_id = '171-371'
-        phone = self.validated_data.get("phone", user.phone)
-        email = self.validated_data.get("email", user.email)
+        phone = self.validated_data.get("phone", self.user.phone)
+        email = self.validated_data.get("email", self.user.email)
 
         date_from = self.validated_data["date_from"].strftime("%d.%m.%Y")
         date_to = self.validated_data["date_to"].strftime("%d.%m.%Y")
         # TODO: не хватает специальности и нормальной группы
-        text = f'{user.name},\nГруппа: {group_id},\nПериод: с {date_from} до {date_to},\n' + \
+        text = f'{self.user.name},\nГруппа: {group_id},\nПериод: с {date_from} до {date_to},\n' + \
                f'Место практики: {self.validated_data["organization_name"]},\n' + \
                f'Руководитель: {self.validated_data["organization_head"]},\n' \
                f'Специальность: 09.03.03 Прикладная информатика,\n' \
@@ -343,36 +334,36 @@ class PracticeLetterRequestSerializer(serializers.Serializer):
         obj, num = get_request_type_and_num(request_name)
 
         RequestStudent.objects.create(
-            user_uuid=user.id,
-            contacts=contacts,
+            user_uuid=self.user.id,
+            contacts=self.contacts,
             reg_number=f"PRL{num}",
             request_title=obj,
             request_text=text,
-            address=get_default_address(name="Отдел практики и трудоустройства 107023, г. Москва, ул. Б. Семёновская, "
-                                             "д. 38, корпус «А», ауд. А - 319"),
+            address=get_default_address(
+                name="Отдел практики и трудоустройства 107023, г. Москва, ул. Б. Семёновская, "
+                     "д. 38, корпус «А», ауд. А - 319"
+            ),
         )
 
 
-class ExtraAgreementRequestSerializer(serializers.Serializer):
+class ExtraAgreementRequestSerializerStudent(BaseSerializerStudent):
     """
     Заключение дополнительного соглашения к договору об обучении
     """
     pass
 
 
-class SendPaymentEduRequestSerializer(serializers.Serializer):
+class SendPaymentEduRequestSerializerStudent(BaseSerializerStudent):
     """
     Отправка квитанции об оплате за обучение, неустойку (пени)
     """
     pass
 
 
-class PrDonateRequestSerializer(serializers.Serializer):
+class PrDonateRequestSerializerStudent(BaseSerializerStudent):
     """
     Оформление дотации Мэрии г. Москвы
     """
-    phone = serializers.CharField(max_length=18)
-    email = serializers.EmailField()
     REASONS = (
         (1, "сироты или оставшиеся без попечения родителей"),
         (2, "инвалиды"),
@@ -407,29 +398,28 @@ class PrDonateRequestSerializer(serializers.Serializer):
                f'Номер членского профсоюзного билета: {self.validated_data["prof_ticket"]}. ' + \
                f'Адрес по месту регистрации: {self.validated_data["user_address"]}.'
 
-        user = self.context['user']
-        contacts = f'{user.name}, {self.validated_data.get("phone", user.phone)}, {self.validated_data.get("email", user.email)}'
+        super(PrDonateRequestSerializerStudent, self).save()
 
         request_name = "Оформить дотацию Мэрии г. Москвы"
         obj, num = get_request_type_and_num(request_name)
 
         RequestStudent.objects.create(
-            user_uuid=user.id,
-            contacts=contacts,
+            user_uuid=self.user.id,
+            contacts=self.contacts,
             reg_number=f"DN{num}",
             request_title=obj,
             request_text=text,
-            address=get_default_address(name="Профсоюзная организация работников и обучающихся 107023, г. Москва, "
-                                             "ул. Б. Семеновская, д. 38, аудитория В-202. Тел. 495 223-05-31"),
+            address=get_default_address(
+                name="Профсоюзная организация работников и обучающихся 107023, г. Москва, "
+                     "ул. Б. Семеновская, д. 38, аудитория В-202. Тел. 495 223-05-31"
+            ),
         )
 
 
-class MatHelpRequestSerializer(serializers.Serializer):
+class MatHelpRequestSerializerStudent(BaseSerializerStudent):
     """
     Заявка на оказание материальной помощи
     """
-    phone = serializers.CharField(max_length=18)
-    email = serializers.EmailField()
     department = serializers.CharField(max_length=700)
     REASONS = (
         (1, "Нуждающиеся в дорогостоящем лечении и (или) восстановлении здоровья, в том числе в компенсации расходов "
@@ -512,11 +502,9 @@ class MatHelpRequestSerializer(serializers.Serializer):
         reasons = ', а также '.join(temp_reasons)
         text += reasons + '.\n'
 
-        user = self.context['user']
-        contacts = f'{user.name}, {self.validated_data.get("phone", user.phone)}, {self.validated_data.get("email", user.email)}'
-
+        super(MatHelpRequestSerializerStudent, self).save()
         group_id = '171-371'  # TODO: valid group
-        phone = self.validated_data.get("phone", user.phone)
+        phone = self.validated_data.get("phone", self.user.phone)
 
         text += f'Подразделение: {self.validated_data["department"]}\nКурс: 3\nГруппа: {group_id}\n' \
                 f'Основа обучения: Бюджетная\nКатегория обучаещегося: студент\nКонтактный телефон: {phone}\n '
@@ -525,22 +513,22 @@ class MatHelpRequestSerializer(serializers.Serializer):
         obj, num = get_request_type_and_num(request_name)
 
         RequestStudent.objects.create(
-            user_uuid=user.id,
-            contacts=contacts,
+            user_uuid=self.user.id,
+            contacts=self.contacts,
             reg_number=f"MR{num}",
             request_title=obj,
             request_text=text,
-            address=get_default_address(name="Профсоюзная организация работников и обучающихся 107023, г. Москва, "
-                                             "ул. Б. Семеновская, д. 38, аудитория В-202. Тел. 495 223-05-31"),
+            address=get_default_address(
+                name="Профсоюзная организация работников и обучающихся 107023, г. Москва, "
+                     "ул. Б. Семеновская, д. 38, аудитория В-202. Тел. 495 223-05-31"
+            ),
         )
 
 
-class SocStipRequestSerializer(serializers.Serializer):
+class SocStipRequestSerializerStudent(BaseSerializerStudent):
     """
     Оформление социальной стипендии
     """
-    phone = serializers.CharField(max_length=18)
-    email = serializers.EmailField()
     REASONS = (
         (1, "Являющиеся детьми-сиротами и детьми, оставшимися без попечения родителей, лицами из числа детей-сирот и "
             "детей, оставшихся без попечения родителей, лицами, потерявшими в период обучения обоих родителей или "
@@ -560,8 +548,7 @@ class SocStipRequestSerializer(serializers.Serializer):
     docs = serializers.FileField()
 
     def save(self, **kwargs):
-        user = self.context['user']
-        contacts = f'{user.name}, {self.validated_data.get("phone", user.phone)}, {self.validated_data.get("email", user.email)}'
+        super(SocStipRequestSerializerStudent, self).save()
 
         text = f'Основание для получения социальнй стипендии: {dict(self.REASONS).get(self.validated_data["reason"])}.'
 
@@ -569,23 +556,23 @@ class SocStipRequestSerializer(serializers.Serializer):
         obj, num = get_request_type_and_num(request_name)
 
         RequestStudent.objects.create(
-            user_uuid=user.id,
-            contacts=contacts,
+            user_uuid=self.user.id,
+            contacts=self.contacts,
             reg_number=f"PS{num}",
             request_title=obj,
             request_text=text,
-            address=get_default_address(name="Профсоюзная организация работников и обучающихся 107023, г. Москва, "
-                                             "ул. Б. Семеновская, д. 38, аудитория В-202. Тел. 495 223-05-31"),
+            address=get_default_address(
+                name="Профсоюзная организация работников и обучающихся 107023, г. Москва, "
+                     "ул. Б. Семеновская, д. 38, аудитория В-202. Тел. 495 223-05-31"
+            ),
         )
 
 
-class ArmyRequestSerializer(serializers.Serializer):
+class ArmyRequestSerializerStudent(BaseSerializerStudent):
     """
     Запрос на получение в мобилизационном отделе справки (Приложение № 2)
     для получения отсрочки от призыва на военную службу в военном комиссариате
     """
-    phone = serializers.CharField(max_length=18)
-    email = serializers.EmailField()
     FACULTIES = (
         (1, "Факультет информационных технологий"),
         (2, "Транспортный факультет"),
@@ -620,13 +607,12 @@ class ArmyRequestSerializer(serializers.Serializer):
     user_temp_address = serializers.CharField(required=False, allow_null=True)
 
     def save(self, **kwargs):
-        user = self.context['user']
-        contacts = f'{user.name}, {self.validated_data.get("phone", user.phone)}, {self.validated_data.get("email", user.email)}'
+        super(ArmyRequestSerializerStudent, self).save()
 
-        phone = self.validated_data.get("phone", user.phone)
-        birthday = user.birthday
+        phone = self.validated_data.get("phone", self.user.phone)
+        birthday = self.user.birthday
 
-        text = f'{user.name}\nФакультет: {dict(self.FACULTIES).get(self.validated_data["faculty"])}\n' \
+        text = f'{self.user.name}\nФакультет: {dict(self.FACULTIES).get(self.validated_data["faculty"])}\n' \
                f'Специальность: 09.03.03 Прикладная информатика\nДР: {birthday}\nТел: {phone}\n' \
                f'Категория годности: {dict(self.CATEGORIES).get(self.validated_data["category"])}\n' \
                f'Место жительства: {self.validated_data["user_address"]}\n' \
@@ -643,26 +629,25 @@ class ArmyRequestSerializer(serializers.Serializer):
         obj, num = get_request_type_and_num(request_name)
 
         RequestStudent.objects.create(
-            user_uuid=user.id,
-            contacts=contacts,
+            user_uuid=self.user.id,
+            contacts=self.contacts,
             reg_number=f"VK{num}",
             request_title=obj,
             request_text=text,
-            address=get_default_address(name="Мобилизационный отдел г. Москва, ул. Б. Семёновская, д. 38, корп. А, "
-                                             "кабинеты А-324, 325. Тел.: (495) 223-05-23, доб. 1225"),
+            address=get_default_address(
+                name="Мобилизационный отдел г. Москва, ул. Б. Семёновская, д. 38, корп. А, "
+                     "кабинеты А-324, 325. Тел.: (495) 223-05-23, доб. 1225"
+            ),
         )
 
 
-class FreeRequestSerializer(serializers.Serializer):
+class FreeRequestSerializerStudent(BaseSerializerStudent):
     """
     Произвольный запрос
     """
-    phone = serializers.CharField(max_length=18)
-    email = serializers.EmailField()
     address = serializers.ChoiceField(choices=get_addresses())
     title = serializers.CharField(max_length=500)
     text = serializers.CharField(max_length=500)
-    user_comment = serializers.CharField(required=False, allow_null=True)
     docs = serializers.FileField(required=False, allow_null=True)
 
     def save(self, **kwargs):
@@ -673,12 +658,11 @@ class FreeRequestSerializer(serializers.Serializer):
         request_name = "Произвольный запрос"
         obj, num = get_request_type_and_num(request_name)
 
-        user = self.context['user']
-        contacts = f'{user.name}, {self.validated_data.get("phone", user.phone)}, {self.validated_data.get("email", user.email)}'
+        super(FreeRequestSerializerStudent, self).save()
 
         RequestStudent.objects.create(
-            user_uuid=user.id,
-            contacts=contacts,
+            user_uuid=self.user.id,
+            contacts=self.contacts,
             request_title=obj,
             request_text=text,
             address=Address.objects.get(pk=self.validated_data["address"]),
