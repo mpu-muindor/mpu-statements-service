@@ -26,7 +26,6 @@ urlpatterns = [
     path('extra_agreement/', PaymentRequestStudentView.as_view(), {'serializer': EdRequestSerializerStudent}),
     path('send_payment_edu/', PaymentRequestStudentView.as_view(), {'serializer': EdRequestSerializerStudent}),
     # Профсоюзная организация
-    path('pr_donate/', RequestStudentView.as_view(), {'serializer': PrDonateRequestSerializerStudent}),
     path('pr_mathelp/', RequestStudentView.as_view(), {'serializer': MatHelpRequestSerializerStudent}),
     path('pr_socstip/', RequestStudentView.as_view(), {'serializer': SocStipRequestSerializerStudent}),
     # Мобилизационный отдел

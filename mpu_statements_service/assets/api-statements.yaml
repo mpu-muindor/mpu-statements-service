@@ -1,4 +1,4 @@
-openapi: 3.0.0
+swagger: "2.0"
 info:
   description: null
   version: 1.0.0
@@ -7,13 +7,12 @@ info:
     name: MIT
 schemes:
   - http
-  - https
 servers:
-  - url: https://statements.6an.ru/
-    description: Production server
-
   - url: http://127.0.0.1:8000
     description: Development server
+
+  - url: https://statements.6an.ru/
+    description: Production server
 tags:
   - name: admin
     description: Админка сервиса. Логин/пароль — admin/admin
@@ -21,13 +20,15 @@ tags:
     description: Справки, доступные студенту
   - name: teacher
     description: Справки, доступные преподавателю
-securityDefinitions:
-  Bearer:
-    type: apiKey
-    name: Authorization
-    in: header
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: Токен авторизации
 security:
-  - Bearer: []
+  - bearerAuth: []
 paths:
   /student/requests/:
     get:
@@ -249,6 +250,7 @@ paths:
           required: true
           in: formData
           description: ID адреса получения документа
+          type: integer
         - name: order_num
           required: true
           in: formData
@@ -317,6 +319,109 @@ paths:
           description: Комментарий пользователя
           type: string
           nullable: true
+      responses:
+        '201':
+          description: Текст справки создан
+        '400':
+          description: Bad Request
+  /student/diplom/:
+    post:
+      tags:
+        - student
+      summary: Заявление на пересдачу для получения диплома с отличием
+      description: Заявление на пересдачу для получения диплома с отличием
+      consumes:
+        - application/x-www-form-urlencoded
+      produces:
+        - application/json
+      parameters:
+        - name: phone
+          in: formData
+          description: Номер телефона
+          required: true
+          type: string
+        - name: email
+          in: formData
+          description: Адрес электронной почты
+          required: true
+          type: string
+          format: email
+        - name: exam_type
+          in: formData
+          description: |
+            Пересдать:
+            + 1, экзамен
+            + 2, зачёт с оценкой
+            + 3, курсовую работу
+            + 4, курсовой проект
+            + 5, практику
+          required: true
+          items:
+            type: integer
+            enum:
+              - 1
+              - 2
+              - 3
+              - 4
+              - 5
+        - name: subject
+          in: formData
+          description: Предмет для пересдачи
+          required: true
+          type: string
+        - name: semester
+          in: formData
+          description: Семестр, когда был сдан предмет
+          required: true
+          type: string
+        - name: ed_form
+          in: formData
+          description: |
+            Форма обучения:
+            + 1, очной
+            + 2, очно-заочной
+            + 3, заочной
+          required: true
+          items:
+            type: integer
+            enum:
+              - 1
+              - 2
+              - 3
+        - name: year
+          in: formData
+          description: |
+            Форма обучения:
+            + 7, 2021/2022
+            + 6, 2020/2021
+            + 5, 2019/2020
+            + 4, 2018/2019
+            + 3, 2017/2018
+            + 2, 2016/2017
+            + 1, 2015/2016
+          required: true
+          items:
+            type: integer
+            enum:
+              - 1
+              - 2
+              - 3
+              - 4
+              - 5
+              - 6
+              - 7
+        - name: mark
+          in: formData
+          description: |
+            Оценка:
+            + 4, хорошо
+            + 3, удовлетворительно
+          required: true
+          items:
+            type: integer
+            enum:
+              - 4
+              - 3
       responses:
         '201':
           description: Текст справки создан
@@ -398,20 +503,46 @@ paths:
           description: Текст справки создан
         '400':
           description: Bad Request
+  /student/passport_data/:
+    post:
+      tags:
+        - student
+      summary: Уточнение паспортных данных
+      description: Уточнение паспортных данных
+      consumes:
+        - application/x-www-form-urlencoded
+      produces:
+        - application/json
+      parameters:
+        - name: phone
+          in: formData
+          description: Номер телефона
+          required: true
+          type: string
+        - name: email
+          in: formData
+          description: Адрес электронной почты
+          required: true
+          type: string
+          format: email
+      responses:
+        '201':
+          description: Текст справки создан
+        '400':
+          description: Bad Request
   /student/pract_select/:
     post:
       tags:
         - student
-      summary: Выбор места практики
-      description: 'Не знаю, что там'
+      summary: Записаться на практику
+      description: Данный вид услуги в настоящее время недоступен.
   /student/pract_letter/:
     post:
       tags:
         - student
-      summary: Заказ сопроводительного письма на прохождение практики
+      summary: Заказать сопроводительное письмо на практику
       description: >-
-        Заказ сопроводительного письма на прохождение практики. **Не забыть про
-        проверку дат**
+        Заказ сопроводительного письма на прохождение практики.
       consumes:
         - application/x-www-form-urlencoded
       produces:
@@ -482,109 +613,26 @@ paths:
     post:
       tags:
         - student
-      summary: Заключение дополнительного соглашения к договору об обучении
-      description: 'Не знаю, что там'
+      summary: Оформить дополнительное соглашение к договору об обучении
+      description: Данный вид услуги доступен только для студентов, обучающихся на платной договорной основе.
   /student/send_payment_edu/:
     post:
       tags:
         - student
-      summary: 'Отправка квитанции об оплате за обучение, неустойку (пени)'
-      description: 'Не знаю, что там'
-  /student/pr_donate/:
-    post:
+      summary: Отправить квитанцию об оплате обучения или пени
+      description: Данный вид услуги доступен только для студентов, обучающихся на платной договорной основе.
+  /student/prof/:
+    get:
       tags:
         - student
-      summary: Оформление дотации Мэрии г. Москвы
-      description: Оформление дотации Мэрии г. Москвы
-      consumes:
-        - multipart/form-data
-      produces:
-        - application/json
-      parameters:
-        - name: phone
-          in: formData
-          description: Номер телефона
-          required: true
-          type: string
-        - name: email
-          in: formData
-          description: Адрес электронной почты
-          required: true
-          type: string
-          format: email
-        - name: year
-          required: true
-          in: formData
-          description: Год назначения выплат
-          type: string
-          maxLength: 4
-        - name: reason
-          in: formData
-          description: >
-            Основание для получения дотации:
-
-            + 1 — сироты или оставшиеся без попечения родителей
-
-            + 2 — инвалиды
-
-            + 3 — члены многодетной семьи
-
-            + 4 — имеющие на иждивении ребёнка
-
-            + 5 — участники военных действий
-
-            + 6 — пострадавшие в результате аварии на Чернобыльской АЭС и других
-            радиационных катастроф
-
-            + 7 — родители — инвалиды, пенсионеры
-
-            + 8 — члены неполной семьи
-
-            + 9 — хроническое заболевание
-          required: true
-          type: array
-          items:
-            type: integer
-            enum:
-              - 1
-              - 2
-              - 3
-              - 4
-              - 5
-              - 6
-              - 7
-              - 8
-              - 9
-        - name: prof_ticket
-          required: true
-          in: formData
-          description: Номер членского профсоюзного билета
-          type: string
-          maxLength: 100
-        - name: user_address
-          required: true
-          in: formData
-          description: Адрес по месту регистрации
-          type: string
-          maxLength: 300
-        - name: docs
-          in: formData
-          description: >-
-            Документы, подтверждающие право на получение дотации. По идее только
-            jpg и pdf.
-          required: true
-          type: file
-      responses:
-        '201':
-          description: Текст справки создан
-        '400':
-          description: Bad Request
+      summary: Вступить в Профсоюз
+      description: Редирект на сторонний сайт (https://lk.eseur.ru/signup)
   /student/pr_mathelp/:
     post:
       tags:
         - student
-      summary: Заявка на оказание материальной помощи
-      description: Заявка на оказание материальной помощи.
+      summary: Заявка на материальную помощь
+      description: Заявка на материальную помощь
       consumes:
         - multipart/form-data
       produces:
@@ -814,12 +862,7 @@ paths:
         - student
       summary: Заявление для получения отсрочки
       description: >
-        Запрос на получение в мобилизационном отделе справки (Приложение № 2)
-        для получения отсрочки от призыва на военную службу в военном
-        комиссариате.
-
-        **Добавить валидацию на поле wife (если статус 'женат', нужно проверять
-        поле wife)**
+        Заполнить личную карточку обучающегося по воинскому учету для получения отсрочки от призыва на военную службу
       consumes:
         - multipart/form-data
       produces:
@@ -836,23 +879,50 @@ paths:
           required: true
           type: string
           format: email
-        - name: faculty
+        - name: home_phone
+          in: formData
+          description: Домашний телефон
+          required: true
+          type: string
+        - name: birthplace
+          in: formData
+          description: Место рождения
+          required: true
+          type: string
+        - name: inn
+          in: formData
+          description: ИНН
+          required: true
+          type: string
+        - name: snils
+          in: formData
+          description: СНИЛС
+          required: true
+          type: string
+        - name: citizenship
+          in: formData
+          description: Гражданство
+          required: true
+          type: string
+        - name: language
+          in: formData
+          description: Иностранный язык
+          required: true
+          type: string
+        - name: proficiency
+          in: formData
+          description: Степень владения
+          required: true
+          type: string
+        - name: education
           in: formData
           description: |
-            Факультет / институт:
-            + 1, Факультет информационных технологий
-            + 2, Транспортный факультет
-            + 3, Факультет машиностроения
-            + 4, Факультет химической технологии и биотехнологии
-            + 5, Факультет урбанистики и городского хозяйства
-            + 6, Факультет базовых компетенций
-            + 7, Инженерная школа (факультет)
-            + 8, Факультет довузовской подготовки
-            + 9, Факультет дополнительного образования
-            + 10, Институт графики и искусства книги имени В. А. Фаворского
-            + 11, Институт коммуникаций и медиабизнеса
-            + 12, Институт издательского дела и журналистики
-            + 13, Институт принтмедиа и информационных технологий
+            Образование:
+              + 1, среднее общее
+              + 2, среднее полное
+              + 3, начальное профессиональное
+              + 4, среднее профессиональное
+              + 5, высшее профессиональное
           required: true
           type: array
           items:
@@ -863,15 +933,135 @@ paths:
               - 3
               - 4
               - 5
-              - 6
-              - 7
-              - 8
-              - 9
-              - 10
-              - 11
-              - 12
-              - 13
-        - name: category
+        - name: name
+          in: formData
+          description: Наименование образовательного учреждения
+          required: true
+          type: string
+        - name: diploma
+          in: formData
+          description: Диплом (серия, номер)
+          required: true
+          type: string
+        - name: end_year
+          in: formData
+          description: Год окончания
+          required: true
+          type: string
+        - name: qualification
+          in: formData
+          description: Квалификация по диплому
+          required: true
+          type: string
+        - name: specialty
+          in: formData
+          description: Направление/специальность по диплому
+          required: true
+          type: string
+        - name: specialty
+          in: formData
+          description: Направление/специальность по диплому
+          required: true
+          type: string
+        - name: martial_status
+          in: formData
+          description: |
+            Семейное положение:
+            + 1, холост
+            + 2, женат
+          required: true
+          type: array
+          items:
+            type: integer
+            enum:
+              - 1
+              - 2
+        - name: relation_degree
+          in: formData
+          description: Степень родства (ближайшие родственники)
+          required: true
+          type: string
+        - name: fio
+          in: formData
+          description: ФИО родственника
+          required: true
+          type: string
+        - name: fam_year
+          in: formData
+          description: Год рождения родственника
+          required: true
+          type: string
+        - name: user_address1
+          in: formData
+          description: Адрес места жительства по паспорту
+          required: true
+          type: string
+        - name: user_address2
+          in: formData
+          description: Адрес места жительства фактический
+          required: true
+          type: string
+        - name: registration_date
+          in: formData
+          description: Дата регистрации по месту жительства
+          required: true
+          type: string
+        - name: pass_series
+          in: formData
+          description: Серия паспорта
+          required: true
+          type: string
+        - name: pass_number
+          in: formData
+          description: Номер паспорта
+          required: true
+          type: string
+        - name: issued
+          in: formData
+          description: Кем выдано
+          required: true
+          type: string
+        - name: issue_date
+          in: formData
+          description: Дата выдачи
+          required: true
+          type: string
+        - name: code
+          in: formData
+          description: Код подраделения
+          required: true
+          type: string
+        - name: reserve_category
+          in: formData
+          description: |
+            Категория запаса
+            + 1
+            + 2
+            + 3
+          required: true
+          type: array
+          items:
+            type: integer
+            enum:
+              - 1
+              - 2
+              - 3
+        - name: military_rank
+          in: formData
+          description: Воинское звание
+          required: true
+          type: string
+        - name: profile
+          in: formData
+          description: Состав (профиль)
+          required: true
+          type: string
+        - name: vus_code
+          in: formData
+          description: Полное кодовое обозначение ВУС
+          required: true
+          type: string
+        - name: suitability_category
           in: formData
           description: |
             Категория годности:
@@ -888,39 +1078,22 @@ paths:
               - 2
               - 3
               - 4
-        - name: martial_status
+        - name: commissariat_name
+          in: formData
+          description: Наименование военного комиссариата по месту жительства
+          required: true
+          type: string
+        - name: docs
           in: formData
           description: |
-            Семейное положение:
-            + 1, холост
-            + 2, женат
+            Загрузить сканы документов для воинского учета:
+
+            - паспорт (стр. 1-2 и регистрацию);
+            - документ для временной регистрации;
+            - удостоверение гражданина, подлежащего призыву;
+            - военный билет.
+          type: file
           required: true
-          type: array
-          items:
-            type: integer
-            enum:
-              - 1
-              - 2
-        - name: wife
-          in: formData
-          description: 'ФИО жены, дата рождения'
-          nullable: true
-          type: string
-        - name: children
-          in: formData
-          description: 'ФИО детей, дата рождения'
-          nullable: true
-          type: string
-        - name: user_address
-          in: formData
-          description: Адрес места жительства
-          required: true
-          type: string
-        - name: user_temp_address
-          in: formData
-          description: Адрес временной регистрации
-          nullable: true
-          type: string
       responses:
         '201':
           description: Текст справки создан
@@ -931,7 +1104,7 @@ paths:
       tags:
         - student
       summary: Произвольный запрос
-      description: Произвольный запрос. **Добавлены не все адреса!**
+      description: Произвольный запрос
       consumes:
         - multipart/form-data
       produces:
@@ -996,6 +1169,12 @@ paths:
             type: array
             items:
               $ref: '#/definitions/RequestTeacher'
+  /teacher/prof/:
+    get:
+      tags:
+        - teacher
+      summary: Вступить в Профсоюз
+      description: Редирект на сторонний сайт (https://lk.eseur.ru/signup)
   /teacher/new_hardware/:
     post:
       tags:

@@ -114,8 +114,7 @@ class EdRequestSerializerStudent(BaseSerializerStudent):
         (2, "диплом о среднем профессиональном образовании"),
         (3, "диплом о начальном профессиональном образовании"),
         (4, "академическая справка или диплом о неполном высшем образовании"),
-        (5, "диплом о полном высшем образовании"),
-    )
+        (5, "диплом о полном высшем образовании"))
     previous_doc = serializers.ChoiceField(choices=DOC_TYPE)
     university_in = serializers.CharField()
     year_in = serializers.CharField()
@@ -148,8 +147,7 @@ class EdRequestSerializerStudent(BaseSerializerStudent):
             reg_number=f"ED{num}",
             request_title=obj,
             request_text=text,
-            address=get_default_address(),
-        )
+            address=get_default_address())
 
 
 class StatusRequestSerializerStudent(BaseSerializerStudent):
@@ -175,8 +173,7 @@ class StatusRequestSerializerStudent(BaseSerializerStudent):
             reg_number=f"SR{num}",
             request_title=obj,
             request_text=text,
-            address=Address.objects.get(pk=self.validated_data["address"]),
-        )
+            address=Address.objects.get(pk=self.validated_data["address"]))
 
 
 class SobesRequestSerializerStudent(BaseSerializerStudent):
@@ -205,8 +202,7 @@ class SobesRequestSerializerStudent(BaseSerializerStudent):
             reg_number=f"SC{num}",
             request_title=obj,
             request_text=text,
-            address=Address.objects.get(pk=self.validated_data["address"]),
-        )
+            address=Address.objects.get(pk=self.validated_data["address"]))
 
 
 class CallRequestSerializerStudent(BaseSerializerStudent):
@@ -235,8 +231,7 @@ class CallRequestSerializerStudent(BaseSerializerStudent):
             reg_number=f"SPV{num}",
             request_title=obj,
             request_text=text,
-            address=get_default_address(),
-        )
+            address=get_default_address())
 
 
 class PersDataRequestSerializerStudent(BaseSerializerStudent):
@@ -262,8 +257,7 @@ class PersDataRequestSerializerStudent(BaseSerializerStudent):
             reg_number=f"PD{num}",
             request_title=obj,
             request_text=text,
-            address=get_default_address(),
-        )
+            address=get_default_address())
 
 
 class PassRestoreRequestSerializerStudent(BaseSerializerStudent):
@@ -286,8 +280,7 @@ class PassRestoreRequestSerializerStudent(BaseSerializerStudent):
             reg_number=f"RP{num}",
             request_title=obj,
             request_text=text,
-            address=get_default_address(),
-        )
+            address=get_default_address())
 
 
 class PracticeSelectRequestSerializerStudent(BaseSerializerStudent):
@@ -305,8 +298,7 @@ class PracticeLetterRequestSerializerStudent(BaseSerializerStudent):
         (1, "учебная"),
         (2, "производственная"),
         (3, "преддипломная"),
-        (4, "другое"),
-    )
+        (4, "другое"))
     another_practice = serializers.CharField(required=False, allow_null=True)
     practice_type = serializers.ChoiceField(choices=PRACTICE_TYPES)
     date_from = serializers.DateField(format="%d.%m.%Y")
@@ -342,8 +334,7 @@ class PracticeLetterRequestSerializerStudent(BaseSerializerStudent):
             address=get_default_address(
                 name="Отдел практики и трудоустройства 107023, г. Москва, ул. Б. Семёновская, "
                      "д. 38, корпус «А», ауд. А - 319"
-            ),
-        )
+            ))
 
 
 class ExtraAgreementRequestSerializerStudent(BaseSerializerStudent):
@@ -358,62 +349,6 @@ class SendPaymentEduRequestSerializerStudent(BaseSerializerStudent):
     Отправка квитанции об оплате за обучение, неустойку (пени)
     """
     pass
-
-
-class PrDonateRequestSerializerStudent(BaseSerializerStudent):
-    """
-    Оформление дотации Мэрии г. Москвы
-    """
-    REASONS = (
-        (1, "сироты или оставшиеся без попечения родителей"),
-        (2, "инвалиды"),
-        (3, "члены многодетной семьи"),
-        (4, "имеющие на иждивении ребёнка"),
-        (5, "участники военных действий"),
-        (6, "пострадавшие в результате аварии на Чернобыльской АЭС и других радиационных катастроф"),
-        (7, "родители — инвалиды, пенсионеры"),
-        (8, "члены неполной семьи"),
-        (9, "хроническое заболевание"),
-    )
-    year = serializers.CharField(max_length=4)
-    reason = serializers.ChoiceField(choices=REASONS)
-    prof_ticket = serializers.CharField(max_length=100)
-    user_address = serializers.CharField(max_length=300)
-    docs = serializers.FileField()
-
-    def save(self, **kwargs):
-        choice = {
-            1: 'я являюсь сиротой / остался(ась) без попечения родителей',
-            2: 'я являюсь инвалидом',
-            3: 'я член многодетной семьи',
-            4: 'я имею на иждивении ребёнка',
-            5: 'я являюсь участником военных действий',
-            6: 'я пострадал(а) в результате аварии на Чернобыльской АЭС и других радиационных катастроф',
-            7: 'мои родители – инвалиды / пенсионеры',
-            8: 'я являюсь членом неполной семьи',
-            9: 'я имею хроническое заболевание',
-        }.get(self.validated_data["reason"])
-        text = f'Прошу назначить меня на получение материальной поддержки остронуждающимся студентам ' + \
-               f'в {self.validated_data["year"]} году в связи с тем, что: {choice}. ' + \
-               f'Номер членского профсоюзного билета: {self.validated_data["prof_ticket"]}. ' + \
-               f'Адрес по месту регистрации: {self.validated_data["user_address"]}.'
-
-        super(PrDonateRequestSerializerStudent, self).save()
-
-        request_name = "Оформить дотацию Мэрии г. Москвы"
-        obj, num = get_request_type_and_num(request_name)
-
-        RequestStudent.objects.create(
-            user_uuid=self.user.id,
-            contacts=self.contacts,
-            reg_number=f"DN{num}",
-            request_title=obj,
-            request_text=text,
-            address=get_default_address(
-                name="Профсоюзная организация работников и обучающихся 107023, г. Москва, "
-                     "ул. Б. Семеновская, д. 38, аудитория В-202. Тел. 495 223-05-31"
-            ),
-        )
 
 
 class MatHelpRequestSerializerStudent(BaseSerializerStudent):
@@ -459,8 +394,7 @@ class MatHelpRequestSerializerStudent(BaseSerializerStudent):
         (26, "Обучающиеся, имеющие право на получение государственной социальной стипендии в условиях предупреждения "
              "распространения новой коронавирусной инфекции COVID-19 на территории РФ"),
         (27, "Обучающиеся, проживающие в общежитиях Московского Политеха в условиях реализации мероприятий по "
-             "предотвращению распространения коронавирусной инфекции COVID-19"),
-    )
+             "предотвращению распространения коронавирусной инфекции COVID-19"))
     reason = serializers.MultipleChoiceField(choices=REASONS)
     docs = serializers.FileField()
 
@@ -521,8 +455,7 @@ class MatHelpRequestSerializerStudent(BaseSerializerStudent):
             address=get_default_address(
                 name="Профсоюзная организация работников и обучающихся 107023, г. Москва, "
                      "ул. Б. Семеновская, д. 38, аудитория В-202. Тел. 495 223-05-31"
-            ),
-        )
+            ))
 
 
 class SocStipRequestSerializerStudent(BaseSerializerStudent):
@@ -542,8 +475,7 @@ class SocStipRequestSerializerStudent(BaseSerializerStudent):
             "сержантами, старшинами, и уволенных с военной службы по основаниям, предусмотренным подпунктами «б» - "
             "«г» пункта 1, подпунктом «а» пункта 2 и подпунктами «а» - «в» пункта 3 статьи 51 Федерального закона от "
             "28 марта 1998 года N 53-ФЗ «О воинской обязанности и военной службе»"),
-        (5, "Получившие государственную социальную помощь"),
-    )
+        (5, "Получившие государственную социальную помощь"))
     reason = serializers.ChoiceField(choices=REASONS)
     docs = serializers.FileField()
 
@@ -563,67 +495,130 @@ class SocStipRequestSerializerStudent(BaseSerializerStudent):
             request_text=text,
             address=get_default_address(
                 name="Профсоюзная организация работников и обучающихся 107023, г. Москва, "
-                     "ул. Б. Семеновская, д. 38, аудитория В-202. Тел. 495 223-05-31"
-            ),
-        )
+                     "ул. Б. Семеновская, д. 38, аудитория В-202. Тел. 495 223-05-31"))
+
+
+class ForeignLanguageSerializerHelper(serializers.Serializer):
+    language = serializers.CharField(max_length=20)
+    proficiency = serializers.CharField(max_length=20)
+
+
+class EducationSerializerHelper(serializers.Serializer):
+    name = serializers.CharField(max_length=50)
+    diploma = serializers.CharField(max_length=20)
+    year = serializers.CharField(max_length=10)
+    qualification = serializers.CharField(max_length=50)
+    specialty = serializers.CharField(max_length=50)
+
+
+class FamilySerializerHelper(serializers.Serializer):
+    relation_degree = serializers.CharField(max_length=30)
+    fio = serializers.CharField(max_length=50)
+    year = serializers.CharField(max_length=10)
 
 
 class ArmyRequestSerializerStudent(BaseSerializerStudent):
     """
-    Запрос на получение в мобилизационном отделе справки (Приложение № 2)
-    для получения отсрочки от призыва на военную службу в военном комиссариате
+    Сервис пердназначен для постановки на воинский учет обучающихся - граждан,
+    пребывающих в запасе (ГПЗ) и граждан, подлежащие призыву (ГПП).
+    На основании заполненных данных вам будет оформлена справка (приложение №2),
+    которая является основанием для предоставления отсрочки от призыва в Вооруженные Силы.
     """
-    FACULTIES = (
-        (1, "Факультет информационных технологий"),
-        (2, "Транспортный факультет"),
-        (3, "Факультет машиностроения"),
-        (4, "Факультет химической технологии и биотехнологии"),
-        (5, "Факультет урбанистики и городского хозяйства"),
-        (6, "Факультет базовых компетенций"),
-        (7, "Инженерная школа (факультет)"),
-        (8, "Факультет довузовской подготовки"),
-        (9, "Факультет дополнительного образования"),
-        (10, "Институт графики и искусства книги имени В. А. Фаворского"),
-        (11, "Институт коммуникаций и медиабизнеса"),
-        (12, "Институт издательского дела и журналистики"),
-        (13, "Институт принтмедиа и информационных технологий"),
-    )
-    faculty = serializers.ChoiceField(choices=FACULTIES)
-    CATEGORIES = (
+    EDUCATIONS = (
+        (1, "среднее общее"),
+        (2, "среднее полное"),
+        (3, "начальное профессиональное"),
+        (4, "среднее профессиональное"),
+        (5, "высшее профессиональное"))
+    SUITABILITY_CATEGORIES = (
         (1, "А"),
         (2, "Б"),
         (3, "В"),
-        (4, "Г"),
-    )
-    category = serializers.ChoiceField(choices=CATEGORIES)
+        (4, "Г"))
     MARTIAL_STATUSES = (
         (1, "холост"),
-        (2, "женат"),
+        (2, "женат"))
+    RESERVE_CATEGORIES = (
+        (1, "1"),
+        (2, "2"),
+        (3, "3"),
     )
+    home_phone = serializers.CharField(max_length=18)  # Контактные данные
+    birthplace = serializers.CharField(max_length=200)  # Место рождения
+    inn = serializers.CharField(max_length=12)
+    snils = serializers.CharField(max_length=11)
+    citizenship = serializers.CharField(max_length=50)  # Гражданство
+    # language_proficiency = ForeignLanguageSerializerHelper(many=True)  # Владение иностранными языками
+    language = serializers.CharField(max_length=20)
+    proficiency = serializers.CharField(max_length=20)
+    education = serializers.ChoiceField(choices=EDUCATIONS)
+    #
+    # education_institutions = EducationSerializerHelper(many=True)  # образовательные учреждения
+    name = serializers.CharField(max_length=50)
+    diploma = serializers.CharField(max_length=20)
+    end_year = serializers.CharField(max_length=10)
+    qualification = serializers.CharField(max_length=50)
+    specialty = serializers.CharField(max_length=50)
+    #
     martial_status = serializers.ChoiceField(choices=MARTIAL_STATUSES)
-    wife = serializers.CharField(required=False, allow_null=True)
-    children = serializers.CharField(required=False, allow_null=True)
-    user_address = serializers.CharField()
-    user_temp_address = serializers.CharField(required=False, allow_null=True)
+    # family_members = FamilySerializerHelper(many=True)
+    relation_degree = serializers.CharField(max_length=30)
+    fio = serializers.CharField(max_length=50)
+    fam_year = serializers.CharField(max_length=10)
+    #
+    user_address1 = serializers.CharField(max_length=200)  # Адрес места жительства по паспорту
+    user_address2 = serializers.CharField(max_length=200)  # Адрес места жительства фактический
+    registration_date = serializers.CharField(max_length=10)  # Дата регистрации по месту жительства
+    # Паспортные данные
+    pass_series = serializers.CharField(max_length=4)  # Серия паспорта
+    pass_number = serializers.CharField(max_length=6)  # Номер паспорта
+    issued = serializers.CharField(max_length=100)  # Кем выдано
+    issue_date = serializers.CharField(max_length=10)  # Дата выдачи
+    code = serializers.CharField(max_length=7)  # Код подраделения
+    # Сведения о воинском учёте
+    reserve_category = serializers.ChoiceField(RESERVE_CATEGORIES)  # Категория запаса
+    military_rank = serializers.CharField(max_length=100)  # Воинское звание
+    profile = serializers.CharField(max_length=100)  # Состав (профиль)
+    vus_code = serializers.CharField(max_length=100)  # Полное кодовое обозначение ВУС
+    suitability_category = serializers.ChoiceField(SUITABILITY_CATEGORIES)  # Категория годности
+    commissariat_name = serializers.CharField(max_length=100)  # Наименование военного комиссариата по месту жительства
+    docs = serializers.FileField(required=False, allow_null=True)
 
     def save(self, **kwargs):
         super(ArmyRequestSerializerStudent, self).save()
 
         phone = self.validated_data.get("phone", self.user.phone)
+        email = self.validated_data.get("email", self.user.email)
         birthday = self.user.birthday
 
-        text = f'{self.user.name}\nФакультет: {dict(self.FACULTIES).get(self.validated_data["faculty"])}\n' \
-               f'Специальность: 09.03.03 Прикладная информатика\nДР: {birthday}\nТел: {phone}\n' \
-               f'Категория годности: {dict(self.CATEGORIES).get(self.validated_data["category"])}\n' \
-               f'Место жительства: {self.validated_data["user_address"]}\n' \
-               f'Семейное положение: {dict(self.MARTIAL_STATUSES).get(self.validated_data["martial_status"])}\n'
-
-        if self.validated_data.get("children"):
-            text += f'ФИО детей, дата рождения: {self.validated_data["children"]}\n'
-        if self.validated_data.get("wife"):
-            text += f'Жена: {self.validated_data["wife"]}\n'
-        if self.validated_data.get("user_temp_address"):
-            text += f'Временная регистрация: {self.validated_data["user_temp_address"]}\n'
+        text = \
+            f'Контактные данные: \n' \
+            f'Тел. моб.: {phone} E-mail: {email} \n' \
+            f'Тел. дом.: {self.validated_data["home_phone"]} \n' \
+            f'Дата рождения: {birthday} \n' \
+            f'Место рождения: {self.validated_data["birthplace"]} \n' \
+            f'ИНН: {self.validated_data["inn"]} \n' \
+            f'СНИЛС: {self.validated_data["snils"]} \n' \
+            f'Гражданство: {self.validated_data["citizenship"]} \n' \
+            f'Владение иностранными языками: {self.validated_data["language"]} {self.validated_data["proficiency"]} {self.validated_data["education"]} \n' \
+            f'Образование: {dict(self.EDUCATIONS).get(self.validated_data["education"])} \n' \
+            f'Образовательные учреждения: {self.validated_data["name"]} {self.validated_data["diploma"]} {self.validated_data["end_year"]} {self.validated_data["qualification"]} {self.validated_data["specialty"]} \n' \
+            f'Семейное положение: {dict(self.MARTIAL_STATUSES).get(self.validated_data["martial_status"])} \n' \
+            f'Состав семьи: {self.validated_data["relation_degree"]} {self.validated_data["fio"]} {self.validated_data["fam_year"]} \n' \
+            f'Адрес места жительства по паспорту: {self.validated_data["user_address1"]} \n' \
+            f'Адрес места жительства фактический: {self.validated_data["user_address2"]} \n' \
+            f'Дата регистрации по месту жительства: {self.validated_data["registration_date"]} \n' \
+            f'Паспортные данные: \n' \
+            f'Серия {self.validated_data["pass_series"]} Номер {self.validated_data["pass_number"]} \n' \
+            f'Кем выдан: {self.validated_data["issued"]} \n' \
+            f'Дата выдачи {self.validated_data["issue_date"]} Код подразделения {self.validated_data["code"]} \n' \
+            f'СВЕДЕНИЯ О ВОИНСКОМ УЧЕТЕ \n' \
+            f'Категория запаса: {dict(self.RESERVE_CATEGORIES).get(self.validated_data["reserve_category"])} \n' \
+            f'Воинское звание: {self.validated_data["military_rank"]} \n' \
+            f'Состав (профиль): {self.validated_data["profile"]} \n' \
+            f'Полное кодовое обозначение ВУС: {self.validated_data["vus_code"]} \n' \
+            f'Категория годности: {dict(self.SUITABILITY_CATEGORIES).get(self.validated_data["suitability_category"])} \n' \
+            f'Наименование военного комиссариата по месту жительства: {self.validated_data["commissariat_name"]} \n'
 
         request_name = "Справка для получения отсрочки от призыва на военную службу"
         obj, num = get_request_type_and_num(request_name)
@@ -636,9 +631,7 @@ class ArmyRequestSerializerStudent(BaseSerializerStudent):
             request_text=text,
             address=get_default_address(
                 name="Мобилизационный отдел г. Москва, ул. Б. Семёновская, д. 38, корп. А, "
-                     "кабинеты А-324, 325. Тел.: (495) 223-05-23, доб. 1225"
-            ),
-        )
+                     "кабинеты А-324, 325. Тел.: (495) 223-05-23, доб. 1225"))
 
 
 class FreeRequestSerializerStudent(BaseSerializerStudent):
@@ -665,8 +658,7 @@ class FreeRequestSerializerStudent(BaseSerializerStudent):
             contacts=self.contacts,
             request_title=obj,
             request_text=text,
-            address=Address.objects.get(pk=self.validated_data["address"]),
-        )
+            address=Address.objects.get(pk=self.validated_data["address"]))
 
 
 class RequestHistoryStudentSerializer(serializers.ModelSerializer):

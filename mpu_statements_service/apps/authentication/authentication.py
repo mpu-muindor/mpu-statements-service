@@ -11,7 +11,7 @@ class User:
         self.full_user = jwt_user
 
         self.id = jwt_user.get('id')
-        self.name = f'{jwt_user["first_name"]} {jwt_user["last_name"]}'
+        self.name = f'{jwt_user.get("first_name")} {jwt_user.get("last_name")}'
         if jwt_user.get("middle_name") is not None:
             self.name += f' {jwt_user.get("middle_name")}'
         self.birthday = jwt_user.get('birthday')
@@ -28,37 +28,41 @@ class CustomJWTAuthentication(authentication.BaseAuthentication):
     def authenticate(self, request):
         token = request.headers.get('Authorization')
         if not token:
-            raise exceptions.AuthenticationFailed('No token')
+            # TODO: дождаться сервиса авторизации
+            payload = dict(
+                id=1,
+                first_name='Иван',
+                last_name='Иванов',
+                birthday='1975-10-31',
+                login='login',
+                email='email@mail.com',
+                phone='8-800-917-7346',
+                about='Обо мне',
+                user_type='student',
+            )
+            user = User(jwt_user=payload)
+            return user, None
         else:
             if 'bearer' in token.lower():
                 token = token.split(' ')[1]
 
         key = settings.SECRET_JWT
-
         api_token = settings.API_TOKEN
-
         verification = requests.post(
             url='https://auth.6an.ru/api/service/verify-token',
             params={
                 'jwt': token,
-                'api_token': api_token,
-            },
-        )
+                'api_token': api_token})
 
         result = verification.json().get('result')
-
         if result:
             try:
                 payload = jwt.decode(jwt=token, key=key, algorithms=['HS256'])
             except jwt.exceptions.InvalidSignatureError:
                 raise exceptions.ValidationError({
-                    'message': 'Signature verification failed'
-                })
-
+                    'message': 'Signature verification failed'})
             user = User(jwt_user=payload)
-
             return user, None  # authentication successful
 
         raise exceptions.ValidationError({
-            'message': 'Wrong token'
-        })
+            'message': 'Wrong token'})
