@@ -70,3 +70,5 @@ venv.bak/
 mpu_statements_service/.idea
 mpu_statements_service/logs
 mpu_statements_service/env
+
+mpu_statements_service/media
