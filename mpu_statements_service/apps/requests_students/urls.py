@@ -1,6 +1,7 @@
 """
 Справки студентов
 """
+from django.shortcuts import redirect
 from django.urls import path
 from .views import *
 from .serializers import *
@@ -32,4 +33,9 @@ urlpatterns = [
     path('otsrochka/', RequestStudentView.as_view(), {'serializer': ArmyRequestSerializerStudent}),
     # Прочее
     path('free_request/', RequestStudentView.as_view(), {'serializer': FreeRequestSerializerStudent}),
+
+    # Новое
+    path('diplom/', RequestStudentView.as_view(), {'serializer': DiplomSerializer}),
+    path('passport_data/', RequestStudentView.as_view(), {'serializer': PassportDataSerializer}),
+    path('prof/', lambda request: redirect('https://lk.eseur.ru/signup/', permanent=True)),
 ]

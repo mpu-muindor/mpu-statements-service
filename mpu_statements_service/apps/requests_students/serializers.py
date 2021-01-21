@@ -697,3 +697,59 @@ class RequestTypeSerializer(serializers.ModelSerializer):
     class Meta:
         model = RequestStudentType
         fields = ("id", "name",)
+
+
+class DiplomSerializer(BaseSerializerStudent):
+    EXAM_TYPES = (
+        (1, "экзамен"),
+        (2, "зачёт с оценкой"),
+        (3, "курсовую работу"),
+        (4, "курсовой проект"),
+        (5, "практику"))
+    ED_FORMS = (
+        (1, "очной"),
+        (2, "очно-заочной"),
+        (3, "заочной"))
+    YEARS = (
+        (7, "2021/2022"),
+        (6, "2020/2021"),
+        (5, "2019/2020"),
+        (4, "2018/2019"),
+        (3, "2017/2018"),
+        (2, "2016/2017"),
+        (1, "2015/2016"))
+    MARKS = (
+        (4, "хорошо"),
+        (3, "удовлетворительно"))
+    exam_type = serializers.ChoiceField(choices=EXAM_TYPES)
+    subject = serializers.CharField(max_length=30)  # TODO: получать предметы из другого сервиса
+    semester = serializers.CharField(max_length=2)
+    ed_form = serializers.ChoiceField(choices=ED_FORMS)
+    year = serializers.ChoiceField(choices=YEARS)
+    mark = serializers.ChoiceField(choices=MARKS)
+
+    def save(self, **kwargs):
+        super(DiplomSerializer, self).save()
+
+        text = f'Прошу разрешить мне для получения диплома с отличием пересдать ' + \
+               f'{dict(self.EXAM_TYPES).get(self.validated_data["exam_type"])} ' \
+               f'по дисциплине: {self.validated_data["subject"]} ' \
+               f'за {self.validated_data["semester"]} семестр ' \
+               f'{dict(self.ED_FORMS).get(self.validated_data["ed_form"])} формы обучения, сданный мной в ' \
+               f'{dict(self.YEARS).get(self.validated_data["year"])} учебном году ' \
+               f'на оценку {dict(self.MARKS).get(self.validated_data["mark"])}'
+
+        request_name = "Заявление на пересдачу для получения диплома с отличием"
+        obj, num = get_request_type_and_num(request_name)
+
+        RequestStudent.objects.create(
+            user_uuid=self.user.id,
+            contacts=self.contacts,
+            reg_number=f"DO{num}",
+            request_title=obj,
+            request_text=text,
+            address=get_default_address())
+
+
+class PassportDataSerializer(BaseSerializerStudent):
+    pass

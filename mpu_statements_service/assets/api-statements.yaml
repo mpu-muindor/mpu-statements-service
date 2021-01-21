@@ -229,7 +229,6 @@ paths:
       summary: Справка в социальные учреждения
       description: >-
         Справка в социальные учреждения (Пенсионный фонд, УСЗН и пр.).
-        **Прикрутить проверку даты**
       consumes:
         - application/x-www-form-urlencoded
       produces:
@@ -282,8 +281,7 @@ paths:
         - student
       summary: Справка-вызов
       description: >
-        Справка-вызов. **Нужна валидация на даты (дата 'по' не раньше даты
-        'с')**
+        Справка-вызов.
       consumes:
         - application/x-www-form-urlencoded
       produces:
