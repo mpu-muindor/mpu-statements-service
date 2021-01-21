@@ -37,6 +37,8 @@ urlpatterns = [
     path('student/', include('apps.requests_students.urls')),
     # Справки преподавателей
     path('teacher/', include('apps.requests_teachers.urls')),
+    #
+    path('blanks/', include('apps.multifunc_center.urls')),
 ]
 
 # Static files

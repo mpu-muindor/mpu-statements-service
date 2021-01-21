@@ -39,9 +39,7 @@ class RequestStudent(models.Model):
     STATUSES = (
         (status_approved, "На рассмотрении"),
         (status_rejected, "Отклонено"),
-        (status_done, "Готово"),
-    )
-
+        (status_done, "Готово"))
     user_uuid = models.UUIDField(verbose_name='UUID пользователя')
     contacts = models.CharField(max_length=1000, verbose_name='Контактные данные')
     datetime = models.DateTimeField(verbose_name="Дата, время", auto_now_add=True)
@@ -52,6 +50,7 @@ class RequestStudent(models.Model):
     date_for_status = models.DateTimeField(verbose_name="Дата статуса", auto_now=True)
     address = models.ForeignKey(Address, on_delete=models.CASCADE, verbose_name="Структурное подразделение, адрес")
     remark = models.CharField(verbose_name="Примечание", max_length=1000, blank=True, null=True)
+    docs = models.FileField(verbose_name="Файлы", upload_to='uploads/%Y/%m/%d/', blank=True, null=True)
     # TODO: add user comments and images from docs
 
     def get_addr(self):
@@ -59,8 +58,7 @@ class RequestStudent(models.Model):
 
     def __str__(self):
         return "{} {} {}".format(
-            self.reg_number, self.request_title.name, self.status
-        )
+            self.reg_number, self.request_title.name, self.status)
 
     class Meta:
         verbose_name = "Справки, заявления для студентов"

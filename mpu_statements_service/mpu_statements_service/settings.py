@@ -54,6 +54,7 @@ INSTALLED_APPS = [
     'apps.requests_students',
     'apps.requests_teachers',
     'apps.authentication',
+    'apps.multifunc_center',
 ]
 
 MIDDLEWARE = [

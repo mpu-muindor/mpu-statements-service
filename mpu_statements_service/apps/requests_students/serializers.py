@@ -98,6 +98,9 @@ class BaseSerializerStudent(serializers.Serializer):
     def save(self, **kwargs):
         self.user, self.contacts = get_contacts(self.context['user'], self.validated_data)
 
+        self.phone = self.validated_data.get("phone", self.user.phone)
+        self.email = self.validated_data.get("email", self.user.email)
+
 
 class EdRequestSerializerStudent(BaseSerializerStudent):
     """
@@ -257,7 +260,8 @@ class PersDataRequestSerializerStudent(BaseSerializerStudent):
             reg_number=f"PD{num}",
             request_title=obj,
             request_text=text,
-            address=get_default_address())
+            address=get_default_address(),
+            docs=self.validated_data["docs"])
 
 
 class PassRestoreRequestSerializerStudent(BaseSerializerStudent):
@@ -454,8 +458,8 @@ class MatHelpRequestSerializerStudent(BaseSerializerStudent):
             request_text=text,
             address=get_default_address(
                 name="Профсоюзная организация работников и обучающихся 107023, г. Москва, "
-                     "ул. Б. Семеновская, д. 38, аудитория В-202. Тел. 495 223-05-31"
-            ))
+                     "ул. Б. Семеновская, д. 38, аудитория В-202. Тел. 495 223-05-31"),
+            docs=self.validated_data["docs"])
 
 
 class SocStipRequestSerializerStudent(BaseSerializerStudent):
@@ -495,7 +499,8 @@ class SocStipRequestSerializerStudent(BaseSerializerStudent):
             request_text=text,
             address=get_default_address(
                 name="Профсоюзная организация работников и обучающихся 107023, г. Москва, "
-                     "ул. Б. Семеновская, д. 38, аудитория В-202. Тел. 495 223-05-31"))
+                     "ул. Б. Семеновская, д. 38, аудитория В-202. Тел. 495 223-05-31"),
+            docs=self.validated_data["docs"])
 
 
 class ForeignLanguageSerializerHelper(serializers.Serializer):
@@ -631,7 +636,8 @@ class ArmyRequestSerializerStudent(BaseSerializerStudent):
             request_text=text,
             address=get_default_address(
                 name="Мобилизационный отдел г. Москва, ул. Б. Семёновская, д. 38, корп. А, "
-                     "кабинеты А-324, 325. Тел.: (495) 223-05-23, доб. 1225"))
+                     "кабинеты А-324, 325. Тел.: (495) 223-05-23, доб. 1225"),
+            docs=self.validated_data["docs"])
 
 
 class FreeRequestSerializerStudent(BaseSerializerStudent):
@@ -658,7 +664,8 @@ class FreeRequestSerializerStudent(BaseSerializerStudent):
             contacts=self.contacts,
             request_title=obj,
             request_text=text,
-            address=Address.objects.get(pk=self.validated_data["address"]))
+            address=Address.objects.get(pk=self.validated_data["address"]),
+            docs=self.validated_data["docs"])
 
 
 class RequestHistoryStudentSerializer(serializers.ModelSerializer):
@@ -752,4 +759,48 @@ class DiplomSerializer(BaseSerializerStudent):
 
 
 class PassportDataSerializer(BaseSerializerStudent):
-    pass
+    user_first_name = serializers.CharField(max_length=20)
+    user_last_name = serializers.CharField(max_length=20)
+    user_patronymic = serializers.CharField(max_length=20, required=False, allow_null=True)
+    birthday = serializers.CharField(max_length=10)
+    is_foreign = serializers.BooleanField()
+    pass_series = serializers.CharField(max_length=4)  # Серия паспорта
+    pass_number = serializers.CharField(max_length=6)  # Номер паспорта
+    issued = serializers.CharField(max_length=100)  # Кем выдано
+    issue_date = serializers.CharField(max_length=10)  # Дата выдачи
+    code = serializers.CharField(max_length=7)  # Код подраделения
+    docs = serializers.FileField()
+
+    def save(self, **kwargs):
+        super(PassportDataSerializer, self).save()
+
+        # phone = self.validated_data.get("phone", self.user.phone)
+        # email = self.validated_data.get("email", self.user.email)
+
+        text = \
+            f"Контактные данные: \n" \
+            f"Телефон: {self.phone} E-mail: {self.email}" \
+            f"Фамилия: {self.validated_data['user_first_name']} \n" \
+            f"Имя: {self.validated_data['user_last_name']} \n" \
+            f"Отчество (при наличии): {self.validated_data['user_patronymic']} \n" \
+            f"Дата рождения: {self.validated_data['birthday']} \n" \
+            f"Паспорт: \n" \
+            f"{'Иностранное гражданство' if self.validated_data['is_foreign'] else ''} \n" \
+            f'Серия {self.validated_data["pass_series"]} Номер {self.validated_data["pass_number"]} \n' \
+            f'Кем выдан: {self.validated_data["issued"]} \n' \
+            f'Дата выдачи {self.validated_data["issue_date"]} Код подразделения {self.validated_data["code"]} \n'
+
+        if self.validated_data.get("user_comment"):
+            text += f' Комментарий: {self.validated_data["user_comment"]}'
+
+        request_name = "Уточнение паспортных данных"
+        obj, num = get_request_type_and_num(request_name)
+
+        RequestStudent.objects.create(
+            user_uuid=self.user.id,
+            contacts=self.contacts,
+            reg_number=f"PA{num}",
+            request_title=obj,
+            request_text=text,
+            address=get_default_address(),
+            docs=self.validated_data["docs"])
